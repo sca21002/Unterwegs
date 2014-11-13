@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0" xmlns="http://www.topografix.com/GPX/1/0" creator="Polar WebSync 2.4 - www.polar.fi" xsi:schemaLocation="http://www.topografix.com/GPX/1/0 http://www.topografix.com/GPX/1/0/gpx.xsd">
+  <time>2014-10-05T14:15:52Z</time>
+  <trk>
+    <name>Track test</name>
+    <trkseg>
+      <trkpt lat="49.025025000" lon="12.085501667">
+        <time>2014-10-05T14:15:52Z</time>
+        <fix>2d</fix>
+        <sat>7</sat>
+      </trkpt>
+      <trkpt lat="49.025031667" lon="12.085471667">
+        <time>2014-10-05T14:15:53Z</time>
+        <fix>2d</fix>
+        <sat>7</sat>
+      </trkpt>
+      <trkpt lat="49.025040000" lon="12.085443333">
+        <time>2014-10-05T14:15:54Z</time>
+        <fix>2d</fix>
+        <sat>7</sat>
+      </trkpt>
+      <trkpt lat="49.025050000" lon="12.085420000">
+        <time>2014-10-05T14:15:55Z</time>
+        <fix>2d</fix>
+        <sat>7</sat>
+      </trkpt>
+      <trkpt lat="49.025065000" lon="12.085396667">
+        <time>2014-10-05T14:15:56Z</time>
+        <fix>2d</fix>
+        <sat>7</sat>
+      </trkpt>
+    </trkseg>
+  </trk>
+</gpx>

@@ -1,0 +1,62 @@
+[Params]
+Version=106
+Monitor=0
+SMode=10100000
+Date=20141005
+StartTime=14:15:52.0
+Length=00:59:16.7
+Interval=1
+Upper1=0
+Lower1=0
+Upper2=0
+Lower2=0
+Upper3=0
+Lower3=0
+Timer1=00:00:00.0
+Timer2=00:00:00.0
+Timer3=00:00:00.0
+ActiveLimit=0
+MaxHR=190
+RestHR=62
+StartDelay=0
+VO2max=37
+Weight=87
+
+[Note]
+exercise
+
+[HRZones]
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+
+[IntTimes]
+
+[IntNotes]
+
+[Summary-123]
+0	0	0	0	0	0
+0	0	0	0
+0	0	0	0	0	0
+0	0	0	0
+0	0	0	0	0	0
+0	0	0	0
+
+[Summary-TH]
+0	0	0	0	0	0
+0	0	0	0
+
+[HRData]
+124	46	345
+124	46	345
+127	48	345
+128	52	345
+129	55	345

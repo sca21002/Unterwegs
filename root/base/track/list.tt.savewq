@@ -1,0 +1,97 @@
+[% META title = 'Track List' -%]
+
+<script type="text/javascript">
+$(document).ready(function() {
+    jQuery("#track").jqGrid({
+        url : "[% json_url %]",
+        datatype : "json",
+        colNames : [ 'Id', 'Tour', 'Name', 'Source', 'Länge', 'Start', 'Ende' ],
+        colModel : [
+            {   name  : 'ogc_fid',
+                jsonmap: 'properties.ogc_fid',
+                width : 15
+            },
+            {
+                name : 'tour',
+                jsonmap: 'properties.tour',
+                width: 45
+            },
+            {
+                name : 'name',
+                jsonmap: 'properties.name',
+                width: 120
+            },
+            {
+                name  : 'src',
+                jsonmap: 'properties.src',
+                width : 60
+            },
+            {
+                name  : 'len',
+                jsonmap: 'properties.len',
+                formatter: 'number',
+                width : 50,
+                align : 'right'
+
+            },
+            {
+                name : 'start',
+                jsonmap: 'properties.start',
+                width : 90
+
+            },
+            {
+                name : 'end',
+                jsonmap: 'properties.end',
+                width: 35
+            }
+        ],
+        rowNum : "10",    
+        height : "auto",
+        jsonReader: {
+            root: "features",
+            repeatitems: false
+        },
+        pager : '#pager_track',
+        onSelectRow: function(id){ 
+            var rowId = $("#track").getRowData(i);
+            alert(getRowData(rowId['name']))
+        },
+        loadComplete: function(data){
+        $.each(data, function(index, value) {
+                console.log(index);
+        });
+        }
+             
+      });
+     function init(){
+      var map = new ol.Map({
+       target: 'map',
+       layers: [
+         new ol.layer.Tile({
+           source: new ol.source.OSM({
+              attributions : [ol.source.OSM.DATA_ATTRIBUTION],        
+               url : "http://localhost/tiles/osm-bright/{z}/{x}/{y}.png",
+               crossOrigin: null
+         })
+         })
+       ],
+       controls: ol.control.defaults({
+           attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
+               collapsible: false
+           })
+       }),
+       view: new ol.View({
+         center: ol.proj.transform([12.053, 48.941], 'EPSG:4326', 'EPSG:3857'),
+         zoom: 13
+       })
+    });     
+   }
+    init();  
+});
+</script>
+<span id="uw">
+<div id="map" class="map" style="width: 400px; height: 300px; border: 1px solid black"></div> 
+<table id="track"></table>
+<div id="pager_track"></div>
+</span>

@@ -1,0 +1,5 @@
+Unterwegs-*
+*_local.conf
+.build/
+t/var/unterwegs.db
+t/var/unterwegs.conf
