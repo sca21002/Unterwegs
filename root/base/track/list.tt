@@ -26,82 +26,49 @@ $(document).ready(function() {
        })
     });  
 
-
-
-
-
-
     jQuery("#track").jqGrid({
         url : "[% json_url %]",
         datatype : "json",
         colNames : [ 'Id', 'Tour', 'Name', 'Source', 'Länge', 'Start', 'Ende' ],
         colModel : [
             {   name  : 'ogc_fid',
-                jsonmap: 'properties.ogc_fid',
                 width : 15
             },
             {
                 name : 'tour',
-                jsonmap: 'properties.tour',
                 width: 45
             },
             {
                 name : 'name',
-                jsonmap: 'properties.name',
                 width: 120
             },
             {
                 name  : 'src',
-                jsonmap: 'properties.src',
                 width : 60
             },
             {
                 name  : 'len',
-                jsonmap: 'properties.len',
                 formatter: 'number',
                 width : 50,
                 align : 'right'
-
             },
             {
                 name : 'start',
-                jsonmap: 'properties.start',
                 width : 90
-
             },
             {
                 name : 'end',
-                jsonmap: 'properties.end',
                 width: 35
             }
         ],
         rowNum : "10",    
         height : "auto",
-        jsonReader: {
-            root: "features",
-            repeatitems: false
-        },
         pager : '#pager_track',
         onSelectRow: function(id){ 
             console.log(jQuery(this).jqGrid('getRowData',id));
             
-        },
-        loadComplete: function(data){
-            init(data);
         }
-             
       });
-     function init(data){
-
-     var vectorLayer = new ol.layer.Vector({
-        source: new ol.source.GeoJSON({
-            projection: 'EPSG:3857',
-            'object': data  
-        })
-      });
-
-      map.addLayer(vectorLayer);
-   }
 });
 </script>
 <span id="uw">

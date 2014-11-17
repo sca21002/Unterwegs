@@ -63,35 +63,32 @@ sub json : Chained('tracks') PathPart('json') Args(0) {
         },
     );
 
-    my $ft_col =  $tracks_rs->as_feature_collection;
-
-    #  $c->log->debug(Dumper($ft_col->to_json));
-
-     $ft_col->page($page);
-     $ft_col->total($tracks_rs->pager->last_page);
-     $ft_col->records($tracks_rs->pager->total_entries);
-#    while (my $track = $tracks_rs->next) {
-#        $c->log->debug($track->track_line);
-#        my $row->{ogs_fid} = $track->ogc_fid;
-#        $row->{cell} = [
-#            $track->ogc_fid,
-#            $track->tour  && $track->tour->name || '',            
-#            $track->name,
-#            $track->src,
-#            $track->get_column('len'),
-#            $track->start()->strftime('%d.%m.%Y %H:%M'),
-#            (    $track->start()->year  == $track->end()->year
-#              && $track->start()->month == $track->end()->month
-#              && $track->start()->day   == $track->end()->day 
-#              ? $track->end()->strftime('%H:%M') 
-#              : $track->end()->strftime('%d.%m.%Y %H:%M')
-#            )
-#        ];
-#        push @{ $response{rows} }, $row;
-#    }
+    my $response;
+    $response->{page} = $page;
+    $response->{total} = $tracks_rs->pager->last_page;
+    $response->{records} = $tracks_rs->pager->total_entries;
+    my @rows; 
+    while (my $track = $tracks_rs->next) {
+        my $row->{ogs_fid} = $track->ogc_fid;
+        $row->{cell} = [
+            $track->ogc_fid,
+            $track->tour  && $track->tour->name || '',            
+            $track->name,
+            $track->src,
+            $track->get_column('len'),
+            $track->start()->strftime('%d.%m.%Y %H:%M'),
+            (    $track->start()->year  == $track->end()->year
+              && $track->start()->month == $track->end()->month
+              && $track->start()->day   == $track->end()->day 
+              ? $track->end()->strftime('%H:%M') 
+              : $track->end()->strftime('%d.%m.%Y %H:%M')
+            )
+        ];
+        push @{ $response->{rows} }, $row;
+    }
 
     $c->stash(
-        feature_collection => $ft_col,
+        %$response,
         current_view => 'JSON',
     );
 }

@@ -4,24 +4,13 @@ package Unterwegs::View::JSON;
 
 use strict;
 use base 'Catalyst::View::JSON';
-#use Geo::JSON;
-use Data::Dumper;
+#use Data::Dumper;
 
 __PACKAGE__->config({
     expose_stash => [ qw(
-        page total records rows feature_collection
+        page total records rows response
     ) ],
 });
-
-
-sub encode_json {
-    my($self, $c) = @_;
-    my $ft_col = $c->stash->{feature_collection};
-    # $c->log->debug($ft_col);
-    return $ft_col->to_json;
-}
-
-
 
 =head1 NAME
 
