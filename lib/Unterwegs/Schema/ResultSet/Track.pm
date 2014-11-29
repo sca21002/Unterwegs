@@ -23,9 +23,29 @@ sub search_with_len {
         {   
             '+select' => [ 
                 \'ST_Length(Geography(wkb_geometry))/1000',
+                #    \'ST_AsGeoJSON(wkb_geometry)',
+            ],
+            '+as'     => [ 
+                'len', 
+                #    geojson_geometry 
+            ],      
+        },
+    );
+}
+
+sub search_with_geojson_geometry {
+    my $self = shift;
+    my $cond = shift || {};
+   
+    return $self->search(
+        $cond,
+        {   
+            '+select' => [ 
                 \'ST_AsGeoJSON(wkb_geometry)',
             ],
-            '+as'     => [qw( len geojson_geometry ) ],      
+            '+as'     => [ 
+                'geojson_geometry' 
+            ],      
         },
     );
 }

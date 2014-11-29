@@ -2,8 +2,6 @@
 
 <script type="text/javascript">
 $(document).ready(function() {
-
-
        var map = new ol.Map({
        target: 'map',
        layers: [
@@ -65,10 +63,22 @@ $(document).ready(function() {
         height : "auto",
         pager : '#pager_track',
         onSelectRow: function(id){ 
-            console.log(jQuery(this).jqGrid('getRowData',id));
-            
+            ogc_fid = jQuery(this).jqGrid('getRowData',id).ogc_fid;
+            console.log(ogc_fid);
+            $.getJSON( "/track/geojson?ogc_fid=" + ogc_fid, function( data ) {
+                console.log(data);
+                var vectorLayer = new ol.layer.Vector({
+                    source: new ol.source.GeoJSON({
+                        projection: 'EPSG:3857',
+                        'object': data
+                    })
+                });
+                map.addLayer(vectorLayer);     
+                var extent = vectorLayer.getSource().getExtent();   
+                map.getView().fitExtent(extent, map.getSize());
+            });
         }
-      });
+    });
 });
 </script>
 <span id="uw">

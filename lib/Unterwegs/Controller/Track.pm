@@ -93,6 +93,24 @@ sub json : Chained('tracks') PathPart('json') Args(0) {
     );
 }
 
+sub geojson : Chained('tracks') PathPart('geojson') Args(0) {
+    my ($self, $c) = @_;
+
+    my $data = $c->req->params;
+    $c->log->debug(Dumper($data->{ogc_fid}));
+
+    my $ogc_fid = $data->{ogc_fid};
+    my $tracks_rs = $c->stash->{tracks};
+
+    $tracks_rs = $tracks_rs->search_with_geojson_geometry({ogc_fid => $ogc_fid});
+    my $track = $tracks_rs->first;
+    my $feature = $track->as_feature_object;
+    $c->stash(
+        feature => $feature,
+        current_view => 'GeoJSON',
+    );
+}
+
 =encoding utf8
 
 =head1 AUTHOR

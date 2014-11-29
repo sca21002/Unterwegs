@@ -315,14 +315,6 @@ sub as_feature_object {
     my %properties = map { $_ => $self->get_column($_) } 
         $self->non_geometry_columns; 
 
-    $properties{start} = $self->start->strftime('%d.%m.%Y %H:%M');
-    $properties{end}   = 
-        $self->start()->year  == $self->end()->year
-        && $self->start()->month == $self->end()->month
-        && $self->start()->day   == $self->end()->day  
-        ? $self->end()->strftime('%H:%M') 
-        : $self->end()->strftime('%d.%m.%Y %H:%M');
-            
     return Geo::JSON::Feature->new({
         geometry   => $geometry_object,
         properties => \%properties,
@@ -331,7 +323,7 @@ sub as_feature_object {
 
 sub non_geometry_columns {
     my %columns = %{ shift->result_source->columns_info }; 
-    grep { $columns{$_}{data_type} ne 'geometry' } keys(%columns), 'len';
+    grep { $columns{$_}{data_type} ne 'geometry' } keys(%columns);
 }
 
 __PACKAGE__->meta->make_immutable;
