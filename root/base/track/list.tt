@@ -2,6 +2,8 @@
 
 <script type="text/javascript">
 $(document).ready(function() {
+
+       var geojsonSource;
        var map = new ol.Map({
        target: 'map',
        layers: [
@@ -66,15 +68,18 @@ $(document).ready(function() {
             ogc_fid = jQuery(this).jqGrid('getRowData',id).ogc_fid;
             console.log(ogc_fid);
             $.getJSON( "/track/geojson?ogc_fid=" + ogc_fid, function( data ) {
-                console.log(data);
+                if ( typeof geojsonSource != "undefined" ) {
+                    geojsonSource.clear();
+                }
+                geojsonSource = new ol.source.GeoJSON({
+                    projection: 'EPSG:3857',
+                    'object': data
+                });
                 var vectorLayer = new ol.layer.Vector({
-                    source: new ol.source.GeoJSON({
-                        projection: 'EPSG:3857',
-                        'object': data
-                    })
+                    source: geojsonSource
                 });
                 map.addLayer(vectorLayer);     
-                var extent = vectorLayer.getSource().getExtent();   
+                var extent = geojsonSource.getExtent();   
                 map.getView().fitExtent(extent, map.getSize());
             });
         }

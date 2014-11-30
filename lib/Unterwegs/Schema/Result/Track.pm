@@ -284,7 +284,6 @@ sub aggregate_track_points {
         },
     )->single;
     my $result = $row->get_column('result');
-    warn $result;
     return $result;
 }
 
