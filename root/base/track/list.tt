@@ -3,7 +3,7 @@
 <script type="text/javascript">
 $(document).ready(function() {
 
-       var geojsonSource;
+       var vectorLayer;
        var map = new ol.Map({
        target: 'map',
        layers: [
@@ -68,14 +68,14 @@ $(document).ready(function() {
             ogc_fid = jQuery(this).jqGrid('getRowData',id).ogc_fid;
             console.log(ogc_fid);
             $.getJSON( "/track/geojson?ogc_fid=" + ogc_fid, function( data ) {
-                if ( typeof geojsonSource != "undefined" ) {
-                    geojsonSource.clear();
+                if ( typeof vectorLayer != "undefined" ) {
+                    map.removeLayer(vectorLayer)
                 }
-                geojsonSource = new ol.source.GeoJSON({
+                var geojsonSource = new ol.source.GeoJSON({
                     projection: 'EPSG:3857',
                     'object': data
                 });
-                var vectorLayer = new ol.layer.Vector({
+                vectorLayer = new ol.layer.Vector({
                     source: geojsonSource
                 });
                 map.addLayer(vectorLayer);     

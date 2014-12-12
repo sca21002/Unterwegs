@@ -27,6 +27,7 @@ sub get_hrm_file {
 
 sub get_datetime {
     my ($year, $month, $day, $hour, $minute, $second, $timezone) = @_;
+    return unless $year;
     return  DateTime->new(
         year => $year,
         month => $month,
@@ -36,6 +37,21 @@ sub get_datetime {
         second => $second,
         time_zone => 'floating',
     );
+}
+
+sub is_new {
+    my ($gpx_file, $pg_tracks) = @_;
+
+    my $is_new = 1;
+    my $basename = $gpx_file->basename('.gpx');
+    $pg_tracks->SetAttributeFilter("src = '$basename'");
+    my $pg_track = $pg_tracks->GetNextFeature();
+    if ($pg_track) {
+        my $fid = $pg_track->GetFID(); 
+        say "$basename found in the database with FID '$fid'";
+       $is_new = 0; 
+    }    
+    return $is_new;
 }
 
 sub import_tour {
@@ -54,7 +70,12 @@ sub import_gpx_file {
     my $tour_id  = shift;
     my %track_fid_map;
 
+    say "GPX-File: " . $gpx_file->basename;
+    my $pg_tracks  =  $pg_datasource->GetLayerByName('tracks');
+
+    return unless is_new( $gpx_file, $pg_tracks  ); 
     say "Importing " . $gpx_file->basename;
+    
     my $hrm_file = get_hrm_file($gpx_file);
     my $hrm = Unterwegs::HRM->new();
     my ($hrdata, $hr_count);
@@ -73,7 +94,6 @@ sub import_gpx_file {
 
     ### import tracks
     my $gpx_tracks =  $gpx_datasource->GetLayerByName('tracks');
-    my $pg_tracks  =  $pg_datasource->GetLayerByName('tracks');
     while ( my $gpx_track = $gpx_tracks->GetNextFeature() ) {
         my $pg_track = Geo::OGR::Feature->create($pg_tracks->Schema);
         my $gpx_track_fid = $gpx_track->GetFID();
@@ -86,7 +106,7 @@ sub import_gpx_file {
 
     ### import track points
     my $gpx_track_points    = $gpx_datasource->GetLayerByName('track_points');
-
+                             
     my $track_points_count = $gpx_track_points->GetFeatureCount();
     if ( $track_points_count < 5 ) {
         croak "Not enough track points";
@@ -111,24 +131,28 @@ sub import_gpx_file {
             );
             if ($hrm_file->is_file) {
                 my $dt = get_datetime($gpx_track_point->GetField('time'));
-                my $timestr = $dt->strftime("%FT%TZ");
-                say $timestr;
-                if (exists $hrdata->{ $timestr }) {
-                    $pg_track_point->SetField('hr', $hrdata->{$timestr}{heart_rate});
-                    $pg_track_point->SetField('ele', $hrdata->{$timestr}{altitude} );
-                    $pg_track_point->SetField('speed', $hrdata->{$timestr}{speed} );
-                } else { 
-                    carp "No heart rate data for '$timestr'"; 
+                if ($dt) {
+                    my $timestr = $dt->strftime("%FT%TZ");
+                    say $timestr;
+                    if (exists $hrdata->{ $timestr }) {
+                        $pg_track_point->SetField('hr', $hrdata->{$timestr}{heart_rate});
+                        $pg_track_point->SetField('ele', $hrdata->{$timestr}{altitude} );
+                        $pg_track_point->SetField('speed', $hrdata->{$timestr}{speed} );
+                    } else { 
+                        carp "No heart rate data for '$timestr'"; 
+                    }
                 }
             }
             if ($gps_device eq 'Polar RC3 GPS') {
                 my $dt = get_datetime($gpx_track_point->GetField('time'));
-                $dt->set_time_zone('UTC');
-                my $timezone = 100;
-                $pg_track_point->SetField('time',
-                    $dt->year, $dt->month, $dt->day, $dt->hour, 
-                    $dt->minute, $dt->second, $timezone
-                );
+                if ($dt) {
+                    $dt->set_time_zone('UTC');
+                    my $timezone = 100;
+                    $pg_track_point->SetField('time',
+                        $dt->year, $dt->month, $dt->day, $dt->hour, 
+                        $dt->minute, $dt->second, $timezone
+                    );
+                }
             }
             $pg_track_points->CreateFeature($pg_track_point);
         }

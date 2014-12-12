@@ -54,6 +54,7 @@ sub json : Chained('tracks') PathPart('json') Args(0) {
     my $tracks_rs = $c->stash->{tracks};
 
     $tracks_rs = $tracks_rs->search_with_len();
+    warn "Bin nach search_with_len";
     $tracks_rs = $tracks_rs->search(
         {},
         {
@@ -70,18 +71,20 @@ sub json : Chained('tracks') PathPart('json') Args(0) {
     my @rows; 
     while (my $track = $tracks_rs->next) {
         my $row->{ogs_fid} = $track->ogc_fid;
+        my $start = $track->start();
+        my $end   = $track->end();
         $row->{cell} = [
             $track->ogc_fid,
             $track->tour  && $track->tour->name || '',            
             $track->name,
             $track->src,
             $track->get_column('len'),
-            $track->start()->strftime('%d.%m.%Y %H:%M'),
-            (    $track->start()->year  == $track->end()->year
-              && $track->start()->month == $track->end()->month
-              && $track->start()->day   == $track->end()->day 
-              ? $track->end()->strftime('%H:%M') 
-              : $track->end()->strftime('%d.%m.%Y %H:%M')
+            $start->strftime('%d.%m.%Y %H:%M'),
+            (    $start->year  == $end->year
+              && $start->month == $end->month
+              && $start->day   == $end->day 
+              ? $end->strftime('%H:%M') 
+              : $end->strftime('%d.%m.%Y %H:%M')
             )
         ];
         push @{ $response->{rows} }, $row;

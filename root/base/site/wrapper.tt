@@ -25,7 +25,7 @@
 
 <script
     type="text/javascript"
-    src="[% c.uri_for('/static/js/ext/openlayers/ol.js')
+    src="[% c.uri_for('/static/js/ext/openlayers/ol-debug.js')
     %]">
 </script>
 
