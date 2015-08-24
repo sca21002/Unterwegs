@@ -1,4 +1,5 @@
 use utf8;
+use Remedi::Imagefile;
 package Unterwegs::HRM;
 
 # ABSTRACT: Heart rate monitor file

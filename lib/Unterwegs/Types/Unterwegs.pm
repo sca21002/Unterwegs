@@ -1,7 +1,7 @@
 use utf8;
 package Unterwegs::Types::Unterwegs;
 
-# ABSTRACT: Types library for Remedi specific types 
+# ABSTRACT: Types library for Unterwegs specific types 
 
 use strict;
 use warnings;
