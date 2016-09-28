@@ -9,6 +9,43 @@ SET standard_conforming_strings = on;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 
+SET search_path = public, pg_catalog;
+
+ALTER TABLE ONLY public.tracks DROP CONSTRAINT tracks_tour_id_fkey;
+ALTER TABLE ONLY public.track_points DROP CONSTRAINT track_points_track_fid_fkey;
+DROP INDEX public.tracks_geom_idx;
+DROP INDEX public.track_points_geom_idx;
+ALTER TABLE ONLY public.tracks DROP CONSTRAINT tracks_pkey;
+ALTER TABLE ONLY public.track_points DROP CONSTRAINT track_points_pkey;
+ALTER TABLE ONLY public.tours DROP CONSTRAINT tours_pkey;
+ALTER TABLE public.tracks ALTER COLUMN ogc_fid DROP DEFAULT;
+ALTER TABLE public.track_points ALTER COLUMN ogc_fid DROP DEFAULT;
+ALTER TABLE public.tours ALTER COLUMN tour_id DROP DEFAULT;
+DROP SEQUENCE public.tracks_ogc_fid_seq;
+DROP TABLE public.tracks;
+DROP SEQUENCE public.track_points_ogc_fid_seq;
+DROP TABLE public.track_points;
+DROP SEQUENCE public.tours_tour_id_seq;
+DROP TABLE public.tours;
+DROP EXTENSION postgis;
+DROP EXTENSION plpgsql;
+DROP SCHEMA public;
+--
+-- Name: public; Type: SCHEMA; Schema: -; Owner: postgres
+--
+
+CREATE SCHEMA public;
+
+
+ALTER SCHEMA public OWNER TO postgres;
+
+--
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: postgres
+--
+
+COMMENT ON SCHEMA public IS 'standard public schema';
+
+
 --
 -- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
 --

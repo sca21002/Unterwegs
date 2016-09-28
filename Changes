@@ -2,6 +2,8 @@ This file documents the revision history for Perl web application Unterwegs.
 
 {{$NEXT}}
 
+    - Upgrade to Geo::GDAL 2.01 
+
 0.002     2014-12-12 16:38:53+01:00 Europe/Berlin
 
 0.001     2014-11-15 12:53:42+01:00 Europe/Berlin

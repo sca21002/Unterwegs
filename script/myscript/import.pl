@@ -6,8 +6,8 @@ use English qw( -no_match_vars ) ;           # Avoids regex performance penalty
 use Acme::ProgressBar;
 use Path::Tiny;
 use Modern::Perl;
-use Unterwegs::Geo::OGR::DataSource::Pg;
-use Unterwegs::Geo::OGR::DataSource::GPX;
+use Unterwegs::Geo::GDAL::Dataset::Pg;
+use Unterwegs::Geo::GDAL::Dataset::GPX;
 use Unterwegs::Helper;
 use Carp qw(carp croak);
 use Data::Dumper;
@@ -71,7 +71,7 @@ sub import_gpx_file {
     my %track_fid_map;
 
     say "GPX-File: " . $gpx_file->basename;
-    my $pg_tracks  =  $pg_datasource->GetLayerByName('tracks');
+    my $pg_tracks  =  $pg_datasource->GetLayer('tracks');
 
     return unless is_new( $gpx_file, $pg_tracks  ); 
     say "Importing " . $gpx_file->basename;
@@ -87,25 +87,26 @@ sub import_gpx_file {
         $hr_count = scalar keys  %{$hrdata};
     }
 
-    my $gpx_datasource = Unterwegs::Geo::OGR::DataSource::GPX->new($gpx_file);
+    my $gpx_datasource = Unterwegs::Geo::GDAL::Dataset::GPX->new($gpx_file);
    
     my $gps_device 
-        = $gpx_file =~ /^20/ ? 'Garmin eTrex Vista HCx' : 'Polar RC3 GPS'; 
+        = $gpx_file->basename =~ /^20/ ? 'Garmin eTrex Vista HCx' : 'Polar RC3 GPS'; 
 
     ### import tracks
-    my $gpx_tracks =  $gpx_datasource->GetLayerByName('tracks');
+    my $gpx_tracks =  $gpx_datasource->GetLayer('tracks');
     while ( my $gpx_track = $gpx_tracks->GetNextFeature() ) {
-        my $pg_track = Geo::OGR::Feature->create($pg_tracks->Schema);
+        my $pg_track = Geo::OGR::Feature->new($pg_tracks->Schema);
         my $gpx_track_fid = $gpx_track->GetFID();
         $pg_track->SetFrom($gpx_track);
         $pg_track->SetField('src', $gpx_file->basename('.gpx'));
+        $pg_track->SetField('desc', $gps_device);
         $pg_track->SetField('tour_id', $tour_id);
         $pg_tracks->CreateFeature($pg_track);
         $track_fid_map{$gpx_track_fid} =  $pg_track->GetFID();
     }
 
     ### import track points
-    my $gpx_track_points    = $gpx_datasource->GetLayerByName('track_points');
+    my $gpx_track_points    = $gpx_datasource->GetLayer('track_points');
                              
     my $track_points_count = $gpx_track_points->GetFeatureCount();
     if ( $track_points_count < 5 ) {
@@ -117,14 +118,12 @@ sub import_gpx_file {
                 unless $track_points_count == $hr_count;
     }
     
-    my $pg_track_points = $pg_datasource->GetLayerByName('track_points');
+    my $pg_track_points = $pg_datasource->GetLayer('track_points');
     progress {
         while ( my $gpx_track_point = $gpx_track_points->GetNextFeature() ) {
             my $pg_track_point
-                = Geo::OGR::Feature->create($pg_track_points->Schema);
+                = Geo::OGR::Feature->new($pg_track_points->Schema);
             $pg_track_point->SetFrom($gpx_track_point);
-            $pg_track_point->SetField('desc', $gps_device);
-            $pg_track_point->SetField('src', $gpx_file->basename('.gpx'));
             $pg_track_point->SetField(
                 'track_fid',
                 $track_fid_map{ $gpx_track_point->GetField('track_fid') },
@@ -133,7 +132,7 @@ sub import_gpx_file {
                 my $dt = get_datetime($gpx_track_point->GetField('time'));
                 if ($dt) {
                     my $timestr = $dt->strftime("%FT%TZ");
-                    say $timestr;
+                    # say $timestr;
                     if (exists $hrdata->{ $timestr }) {
                         $pg_track_point->SetField('hr', $hrdata->{$timestr}{heart_rate});
                         $pg_track_point->SetField('ele', $hrdata->{$timestr}{altitude} );
@@ -143,16 +142,14 @@ sub import_gpx_file {
                     }
                 }
             }
-            if ($gps_device eq 'Polar RC3 GPS') {
-                my $dt = get_datetime($gpx_track_point->GetField('time'));
-                if ($dt) {
-                    $dt->set_time_zone('UTC');
-                    my $timezone = 100;
-                    $pg_track_point->SetField('time',
-                        $dt->year, $dt->month, $dt->day, $dt->hour, 
-                        $dt->minute, $dt->second, $timezone
-                    );
-                }
+            my $dt = get_datetime($gpx_track_point->GetField('time'));
+            if ($dt) {
+                $dt->set_time_zone('UTC');
+                my $timezone = 100;
+                $pg_track_point->SetField('time',
+                    $dt->year, $dt->month, $dt->day, $dt->hour, 
+                    $dt->minute, $dt->second, $timezone
+                );
             }
             $pg_track_points->CreateFeature($pg_track_point);
         }
@@ -181,7 +178,7 @@ $gpx_path = path($gpx_path);
 
 croak("Path to gpx files: $gpx_path doesn't exist") unless $gpx_path->is_dir;
 
-$pg_datasource = Unterwegs::Geo::OGR::DataSource::Pg->new();
+$pg_datasource = Unterwegs::Geo::GDAL::Dataset::Pg->new();
 
 my $schema = Unterwegs::Helper::get_schema();
 $tour_rs = $schema->resultset('Tour');

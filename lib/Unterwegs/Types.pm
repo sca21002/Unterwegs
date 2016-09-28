@@ -1,12 +1,16 @@
+use utf8;
 package Unterwegs::Types;
 
-# ABSTRACT: Combining Class for types libraries
+# ABSTRACT: Types library for Unterwegs specific types 
 
-use parent 'MooseX::Types::Combine';       
-  
-__PACKAGE__->provide_types_from( qw(
-    MooseX::Types::Moose
-    Unterwegs::Types::Unterwegs
-));
+use strict;
+use warnings;
+use Type::Library
+   -base,
+   -declare => qw(GeoGDALDataset);
+      use Type::Utils -all;
+      use Types::Standard -types;
+
+class_type GeoGDALDataset, {class => 'Geo::GDAL::Dataset'},
 
 1;
