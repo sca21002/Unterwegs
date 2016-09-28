@@ -3,3 +3,9 @@ Unterwegs-*
 .build/
 t/var/unterwegs.db
 t/var/unterwegs.conf
+*.log
+*.swp
+*.swo
+/root/fonts
+/root/node_modules
+/root/build
