@@ -4,6 +4,7 @@ UNTERWEGS_APPS_LIBS_JS_FILES += \
 	node_modules/angular/angular.min.js \
 	node_modules/angular-gettext/dist/angular-gettext.min.js \
 	node_modules/angular-ui-date/dist/date.js \
+	node_modules/ui-bootstrap-custom/ui-bootstrap-custom-tpls-2.1.4.min.js \
 	node_modules/angular-float-thead/angular-floatThead.js \
 	node_modules/file-saver/FileSaver.min.js
 

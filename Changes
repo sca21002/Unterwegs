@@ -2,6 +2,8 @@ This file documents the revision history for Perl web application Unterwegs.
 
 {{$NEXT}}
 
+    - Add a pagination panel
+
 0.004     2016-10-01 14:11:37+02:00 Europe/Berlin
 
 0.003     2016-10-01 14:10:38+02:00 Europe/Berlin

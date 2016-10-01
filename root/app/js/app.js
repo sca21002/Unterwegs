@@ -24,7 +24,7 @@ goog.require('ol.format.GeoJSON');
 goog.require('unterwegs.Tracks');
 
 /** @type {!angular.Module} **/
-app.module = angular.module('unterwegsApp', [unterwegs.module.name]);
+app.module = angular.module('unterwegsApp', [unterwegs.module.name, 'ui.bootstrap']);
 
 app.module.constant('unterwegsServerURL', 
         'http://localhost:8888/');
@@ -132,6 +132,16 @@ app.MainController.prototype.hover = function(ogc_fid) {
         featureGeometry, mapSize,
         /** @type {olx.view.FitOptions} */ ({maxZoom: 16}));
     });
+};
+
+/**
+ * @export
+ */
+app.MainController.prototype.pageChanged = function() {
+    console.log('in page changed');
+    if (this.page !== this.fetchedPage) {
+      this.updateList();
+    }
 };
 
 app.module.controller('MainController', app.MainController);

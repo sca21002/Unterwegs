@@ -21,13 +21,28 @@
           <div class="col-md-5">
             <table class="table table-condensed table-hover">
               <thead></thead> 
-              <tfoot></tfoot>
+              <tfoot>
+                <tr>
+                  <td>
+                    <div class="text-center">
+                      <ul uib-pagination 
+                        ng-model= "ctrl.page" 
+                        total-items= "ctrl.totalTracks"
+                        max-size = 6
+                        items-per-page = 5
+                        num-pages="ctrl.numPages"
+                        ng-change="ctrl.pageChanged()" >
+                      </ul>
+                    </div>
+                  </td>    
+                </tr>
+              </tfoot>    
               <tbody>
                 <tr ng-repeat="track in ctrl.tracks" 
                     ng-mouseenter="ctrl.hover(track.ogc_fid)">
                   <td>
-                      <div>{{track.name}}</div>
-                      <div>{{track.src}}</div>  
+                    <div>{{track.name}}</div>
+                    <div>{{track.src}}</div>  
                   </td>    
                 </tr>     
               </tbody>    
@@ -38,8 +53,9 @@
     <script src="../node_modules/angular/angular.js"></script>
     <script src="../node_modules/angular-gettext/dist/angular-gettext.js"></script> 
     <script src="../node_modules/angular-ui-date/dist/date.js"></script> 
+    <script src="../node_modules/ui-bootstrap-custom/ui-bootstrap-custom-tpls-2.1.4.min.js"></script> 
     <script src="../node_modules/angular-float-thead/angular-floatThead.js"></script> 
     <script src="/@?main=js/app.js"></script>
-    <!-- <script src="../build/unterwegs.js"></script> -->    
+    <!-- <script src="../build/unterwegs.js"></script> -->     
   </body>
 </html>
