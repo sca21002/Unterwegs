@@ -289,7 +289,7 @@ sub aggregate_track_points {
 
 sub start {
    my $self = shift;
-  
+        
     DateTime::Format::Pg->parse_datetime( 
         $self->aggregate_track_points('min', 'time') 
             || '00:00:00'

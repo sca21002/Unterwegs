@@ -365,7 +365,29 @@ __PACKAGE__->belongs_to(
 # Created by DBIx::Class::Schema::Loader v0.07042 @ 2014-10-09 16:09:35
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:lb774qsOpoyhrZKkJUFy7w
 
+use Geo::JSON;
+use Geo::JSON::Feature;
 
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
+sub as_feature_object {
+    my $self = shift;
+
+    my $geometry_object = Geo::JSON->from_json( 
+        $self->get_column('geojson_geometry')
+    );  
+
+    my %properties = map { $_ => $self->get_column($_) } 
+        $self->non_geometry_columns; 
+
+    return Geo::JSON::Feature->new({
+        geometry   => $geometry_object,
+        properties => \%properties,
+    });
+}
+
+sub non_geometry_columns {
+    my %columns = %{ shift->result_source->columns_info }; 
+    grep { $columns{$_}{data_type} ne 'geometry' } keys(%columns);
+}
+
 __PACKAGE__->meta->make_immutable;
 1;

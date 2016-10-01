@@ -20,7 +20,10 @@ goog.require('ol.source.XYZ');
 goog.require('ol.style.Style');
 goog.require('ol.style.Fill');
 goog.require('ol.style.Stroke');
+goog.require('ol.style.Text');
+// goog.require('ol.style.Icon');
 goog.require('ol.format.GeoJSON');
+goog.require('ol.geom.Point');
 goog.require('unterwegs.Tracks');
 
 /** @type {!angular.Module} **/
@@ -49,8 +52,64 @@ app.MainController = function(mapboxURL, unterwegsTracks) {
   this.fetchedPage = 0;
 
   this.trackSource = new ol.source.Vector({
-      features: []
+    features: []
   });
+
+  this.trackPointSource = new ol.source.Vector({
+    features: []
+  });
+
+  this.view = new ol.View({
+    center: ol.proj.transform(
+      this.center, 'EPSG:4326', 'EPSG:3857'
+    ),
+    zoom: this.zoom,
+    maxZoom: 20
+  });
+
+  this.trackStyleFunction = function(feature, resolution) {
+    console.log("Resolution: ", resolution);
+    var multiLineString = /** @type{ol.geom.MultiLineString} */
+ 		(feature.getGeometry());  
+    var styles = [
+      new ol.style.Style({
+        stroke: new ol.style.Stroke({
+          color: "rgba(255,51,51,1)",
+          width: 2
+        })
+      })          
+    ];            
+
+    var lineStrings = multiLineString.getLineStrings();
+    lineStrings.forEach(function(lineString) {
+      var len_tot = 0;  
+      lineString.forEachSegment(function(start, end) {
+        var dx = end[0] - start[0];
+        var dy = end[1] - start[1];
+        var len = Math.sqrt(dy*dy + dx*dx) / resolution;
+        len_tot += len;
+        if (len_tot > 100) {
+          len_tot = 0;
+          var rotation = Math.atan2(dy, dx);
+          // arrows
+          styles.push(new ol.style.Style({
+            geometry: new ol.geom.Point(end),
+            text: new ol.style.Text({
+              text: '\uf0da',
+              font: 'normal 20px FontAwesome',
+              textBaseline: 'middle',
+              // offsetY: -1,
+              rotation: -rotation,
+              fill: new ol.style.Fill({
+          	    color: "rgba(255,51,51,1)"
+              })
+            })  
+          }));
+        }
+      });    
+    });
+    return styles;
+  };
 
   /**
    * @type {ol.Map}
@@ -66,23 +125,26 @@ app.MainController = function(mapboxURL, unterwegsTracks) {
       }),
       new ol.layer.Vector({
         source: this.trackSource,
+        style: this.trackStyleFunction 
+      }),
+      new ol.layer.Vector({
+        source: this.trackPointSource,
         style: new ol.style.Style({
-          fill: new ol.style.Fill({
-            color: [255,255,255,0]
-          }),
-          stroke: new ol.style.Stroke({
-            color: "rgba(150,28,49,0.4)",
-            width: 1
+          image: new ol.style.Circle({
+              fill: new ol.style.Fill({
+                  color: 'rgba(255,255,255,0.4)'
+              }),
+              stroke: new ol.style.Stroke({
+                  width: 3,
+                  color: 'rgba(128,28,49,1)'
+              }),
+              radius: 2,
+              snapToPixel: false
           })
         })
       })
     ],  
-    view: new ol.View({
-      center: ol.proj.transform(
-        this.center, 'EPSG:4326', 'EPSG:3857'
-      ),
-      zoom: this.zoom
-    })
+    view: this.view
   });
 
   this.updateList = function() {
@@ -117,10 +179,12 @@ app.MainController = function(mapboxURL, unterwegsTracks) {
 app.MainController.prototype.hover = function(ogc_fid) {
     var map = /** @type {ol.Map} */ (this.map);
     var trackSource = /** @type {ol.source.Vector} */ (this.trackSource);
+    var trackPointSource = 
+      /** @type {ol.source.Vector} */ (this.trackPointSource);
+    var geojsonFormat = new ol.format.GeoJSON();
 
     this.unterwegsTracks.getTrack(ogc_fid).
     then(function(geoJSON){
-      var geojsonFormat = new ol.format.GeoJSON();
       var feature = /** @type {ol.Feature} */ 
           (geojsonFormat.readFeature(geoJSON));
       trackSource.clear(true);        
@@ -132,6 +196,13 @@ app.MainController.prototype.hover = function(ogc_fid) {
         featureGeometry, mapSize,
         /** @type {olx.view.FitOptions} */ ({maxZoom: 16}));
     });
+//    this.unterwegsTracks.getTrackPoints(ogc_fid).
+//    then(function(geoJSON){
+//      var features = /** @type {ol.Features} */ 
+//          (geojsonFormat.readFeatures(geoJSON));
+//      trackPointSource.clear(true);        
+//      trackPointSource.addFeatures(features);
+//    });       
 };
 
 /**

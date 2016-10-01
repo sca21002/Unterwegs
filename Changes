@@ -2,6 +2,11 @@ This file documents the revision history for Perl web application Unterwegs.
 
 {{$NEXT}}
 
+    - Direction symbols are added on top of the track line string
+    - Import script: dependency of GDAL is removed
+
+0.005     2016-10-01 18:01:03+02:00 Europe/Berlin
+
     - Add a pagination panel
 
 0.004     2016-10-01 14:11:37+02:00 Europe/Berlin

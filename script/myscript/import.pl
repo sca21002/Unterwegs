@@ -1,167 +1,41 @@
 #!/usr/bin/env perl
 use utf8;
-use Getopt::Long;
-use Pod::Usage;
-use English qw( -no_match_vars ) ;           # Avoids regex performance penalty
-use Acme::ProgressBar;
 use Path::Tiny;
-use Modern::Perl;
 use FindBin qw($Bin);
 use lib path($Bin)->parent(2)->child('lib')->stringify;
-use Unterwegs::Geo::GDAL::Dataset::Pg;
-use Unterwegs::Geo::GDAL::Dataset::GPX;
+use warnings  qw(FATAL utf8);    # fatalize encoding glitches
+use open      qw(:std :utf8);    # undeclared streams in UTF-8
+use Getopt::Long;
+use Pod::Usage;
+use English qw( -no_match_vars ) ;  # Avoids regex performance penalty
+use Modern::Perl;
+use XML::Twig;
 use Unterwegs::Helper;
-use Carp qw(carp croak);
-use Data::Dumper;
 use Unterwegs::HRM;
+use Carp qw(carp croak);
 use Path::Iterator::Rule;
+use Log::Log4perl qw(:easy);
+use Log::Log4perl::Util::TimeTracker;
+use Data::Dumper;
 
-my $gpx_extension = qr/\.gpx$/;
+$Data::Dumper::Maxdepth = 5;
 
-my $pg_datasource;
-my $tour_rs;
+### Logdatei initialisieren
 
-sub get_hrm_file {
-    my $gpx_file = shift;
+my $logfile = path($Bin)->parent(2)->child('import_gpx.log');
 
-    return path($gpx_file->parent, $gpx_file->basename('.gpx') . '.hrm');
-}
-
-sub get_datetime {
-    my ($year, $month, $day, $hour, $minute, $second, $timezone) = @_;
-    return unless $year;
-    return  DateTime->new(
-        year => $year,
-        month => $month,
-        day => $day,
-        hour => $hour,
-        minute => $minute,
-        second => $second,
-        time_zone => 'floating',
-    );
-}
-
-sub is_new {
-    my ($gpx_file, $pg_tracks) = @_;
-
-    my $is_new = 1;
-    my $basename = $gpx_file->basename('.gpx');
-    $pg_tracks->SetAttributeFilter("src = '$basename'");
-    my $pg_track = $pg_tracks->GetNextFeature();
-    if ($pg_track) {
-        my $fid = $pg_track->GetFID(); 
-        say "$basename found in the database with FID '$fid'";
-       $is_new = 0; 
-    }    
-    return $is_new;
-}
-
-sub import_tour {
-    my $dir = shift;
-
-    say "Working on tour: " . $dir->basename;
-    my $tour = $tour_rs->create({name => $dir->basename});
-    my @gpx_files = $dir->children($gpx_extension);
-    foreach my $gpx_file(@gpx_files) {
-        import_gpx_file($gpx_file, $tour->tour_id);
-    }
-}
-
-sub import_gpx_file {
-    my $gpx_file = shift;
-    my $tour_id  = shift;
-    my %track_fid_map;
-
-    say "GPX-File: " . $gpx_file->basename;
-    my $pg_tracks  =  $pg_datasource->GetLayer('tracks');
-
-    return unless is_new( $gpx_file, $pg_tracks  ); 
-    say "Importing " . $gpx_file->basename;
-    
-    my $hrm_file = get_hrm_file($gpx_file);
-    my $hrm = Unterwegs::HRM->new();
-    my ($hrdata, $hr_count);
-    say "HRM file: " . $hrm_file if $hrm_file->is_file;
-    if ($hrm_file->is_file) {
-        say "Heat rate file found: $hrm_file";
-        my $data = $hrm->read($hrm_file);
-        $hrdata = $hrm->get_hrdata_as_href_of_time($data);
-        $hr_count = scalar keys  %{$hrdata};
-    }
-
-    my $gpx_datasource = Unterwegs::Geo::GDAL::Dataset::GPX->new($gpx_file);
-   
-    my $gps_device 
-        = $gpx_file->basename =~ /^20/ ? 'Garmin eTrex Vista HCx' : 'Polar RC3 GPS'; 
-
-    ### import tracks
-    my $gpx_tracks =  $gpx_datasource->GetLayer('tracks');
-    while ( my $gpx_track = $gpx_tracks->GetNextFeature() ) {
-        my $pg_track = Geo::OGR::Feature->new($pg_tracks->Schema);
-        my $gpx_track_fid = $gpx_track->GetFID();
-        $pg_track->SetFrom($gpx_track);
-        $pg_track->SetField('src', $gpx_file->basename('.gpx'));
-        $pg_track->SetField('desc', $gps_device);
-        $pg_track->SetField('tour_id', $tour_id);
-        $pg_tracks->CreateFeature($pg_track);
-        $track_fid_map{$gpx_track_fid} =  $pg_track->GetFID();
-    }
-
-    ### import track points
-    my $gpx_track_points    = $gpx_datasource->GetLayer('track_points');
-                             
-    my $track_points_count = $gpx_track_points->GetFeatureCount();
-    if ( $track_points_count < 5 ) {
-        carp "Not enough track points";
-    } 
-    if ($hrm_file->is_file) {
-        warn("Count of Points in GPX ($track_points_count)" 
-                ." and HRM ($hr_count) differ")
-                unless $track_points_count == $hr_count;
-    }
-    
-    my $pg_track_points = $pg_datasource->GetLayer('track_points');
-    progress {
-        while ( my $gpx_track_point = $gpx_track_points->GetNextFeature() ) {
-            my $pg_track_point
-                = Geo::OGR::Feature->new($pg_track_points->Schema);
-            $pg_track_point->SetFrom($gpx_track_point);
-            $pg_track_point->SetField(
-                'track_fid',
-                $track_fid_map{ $gpx_track_point->GetField('track_fid') },
-            );
-            if ($hrm_file->is_file) {
-                my $dt = get_datetime($gpx_track_point->GetField('time'));
-                if ($dt) {
-                    my $timestr = $dt->strftime("%FT%TZ");
-                    # say $timestr;
-                    if (exists $hrdata->{ $timestr }) {
-                        $pg_track_point->SetField('hr', $hrdata->{$timestr}{heart_rate});
-                        $pg_track_point->SetField('ele', $hrdata->{$timestr}{altitude} );
-                        $pg_track_point->SetField('speed', $hrdata->{$timestr}{speed} );
-                    } else { 
-                        carp "No heart rate data for '$timestr'"; 
-                    }
-                }
-            }
-            my $dt = get_datetime($gpx_track_point->GetField('time'));
-            if ($dt) {
-                $dt->set_time_zone('UTC');
-                my $timezone = 100;
-                $pg_track_point->SetField('time',
-                    $dt->year, $dt->month, $dt->day, $dt->hour, 
-                    $dt->minute, $dt->second, $timezone
-                );
-            }
-            $pg_track_points->CreateFeature($pg_track_point);
-        }
-    };
-}
-
+Log::Log4perl->easy_init(
+    { level   => $DEBUG,
+      file    => ">" . $logfile,
+    },
+    { level   => $TRACE,
+      file    => 'STDOUT',
+    },
+);
 
 ### get options 
 
-my($opt_help, $opt_man, $config_dir);
+my($opt_help, $opt_man);
 
 GetOptions(
     'help!' => \$opt_help,
@@ -180,10 +54,13 @@ $gpx_path = path($gpx_path);
 
 croak("Path to gpx files: $gpx_path doesn't exist") unless $gpx_path->is_dir;
 
-$pg_datasource = Unterwegs::Geo::GDAL::Dataset::Pg->new();
+my $gpx_extension = qr/\.gpx$/;
 
 my $schema = Unterwegs::Helper::get_schema();
-$tour_rs = $schema->resultset('Tour');
+my $track_rs = $schema->resultset('Track');
+my $tour_rs = $schema->resultset('Tour');
+
+my $timer = Log::Log4perl::Util::TimeTracker->new();
 
 ### iterator for walking recursivly and searching for gpx files
 
@@ -195,6 +72,116 @@ while ( defined( my $dir = $next->() ) ) {
     my $path = path($dir);
     next unless $path->children( qr/$gpx_extension/ );
     import_tour($path);
+}
+
+sub import_tour {
+    my $dir = shift;
+
+    INFO("Working on tour: ", $dir->basename);
+    my $tour = $tour_rs->create({name => $dir->basename});
+    my @gpx_files = $dir->children($gpx_extension);
+    foreach my $gpx_file(@gpx_files) {
+        import_gpx_file($gpx_file, $tour->tour_id);
+    }
+    my $msecs = $timer->milliseconds();
+    INFO("Elapsed: ", sprintf(
+        "%d hr %d min %d sec", $msecs/(3600*24), $msecs/3600, $msecs/1000
+    ) );  
+}
+
+sub get_hrm_file {
+    my $gpx_file = shift;
+
+    return path($gpx_file->parent, $gpx_file->basename('.gpx') . '.hrm');
+}
+
+sub is_new {
+    my $gpx_file = shift;
+
+    my $basename = $gpx_file->basename('.gpx');
+    return $track_rs->search({src => $basename})->count < 1;
+}
+
+sub trk {
+    my($twig, $trk, $cb)= @_;
+
+    my $i = 0;
+    my @track_points = map {
+            {
+                wkb_geometry       => \[
+                    sprintf(
+                        "ST_SetSRID(ST_MakePoint(%f,%f),%u)",
+                        $_->att('lon'), $_->att('lat'), 4326
+                    )
+                ],
+                track_seg_id       => 0,
+                track_seg_point_id => $i++, 
+                      map { $_->gi => $_->text } $_->children,
+            } 
+        } $trk->descendants("trkpt");
+
+    $cb->({
+        name         => $trk->first_child('name')->text,
+        track_points => \@track_points, 
+    });
+    $twig->purge;
+}
+
+
+sub import_gpx_file {
+    my $gpx_file = shift;
+    my $tour_id  = shift;
+
+    my $hrdata;
+    my $hr_count;
+
+    my $gps_device = $gpx_file->basename =~ /^20/ 
+        ? 'Garmin eTrex Vista HCx' : 'Polar RC3 GPS'; 
+    
+    INFO("\tGPX-File: ", $gpx_file->basename);
+
+
+    unless( is_new($gpx_file) ) {
+        INFO("\t\tis already imported!");
+        return;
+    }    
+    INFO("\tImporting ", $gpx_file->basename);
+    
+    my $hrm_file = get_hrm_file($gpx_file);
+    my $hrm = Unterwegs::HRM->new();
+    if ($hrm_file->is_file) {
+        INFO("\tHeat rate file found: ", $hrm_file->basename);
+        my $data = $hrm->read($hrm_file);
+        $hrdata = $hrm->get_hrdata_as_href_of_time($data);
+        $hr_count = scalar keys  %{$hrdata};
+    }
+
+    my $callback = sub {
+        my $track = shift;
+
+        INFO("\t\tTrack: ", $track->{name});
+        $track->{src} = $gpx_file->basename('.gpx');
+        $track->{desc} = $gps_device;
+        $track->{tour_id} = $tour_id;
+
+        foreach my $track_point ( @{ $track->{track_points} } ) {
+            my $timestr = $track_point->{time};
+            if ( exists $hrdata->{ $timestr } ) {
+                @{ $track_point }{ qw(hr ele speed) } 
+                    =  @{ $hrdata->{$timestr} }{ qw(heart_rate altitude speed) };
+            }
+        }
+
+        $track_rs->create($track);
+    };
+
+    my $twig= new XML::Twig(
+        twig_handlers => { 
+            trk    => sub{ trk(@_, $callback) }
+        }
+    );
+ 
+    $twig->parsefile($gpx_file->stringify); 
 }
 
 =encoding utf-8
@@ -215,12 +202,10 @@ while ( defined( my $dir = $next->() ) ) {
                  import.pl <path to gpx files>
                  import.pl --help
                  import.pl --man 
-                                                                                                                  
 
 =head1 DESCRIPTION
 
-    Imports data from into a database.
-
+    Imports data from gpx and hrm file into a database.
 
 =head1 AUTHOR
 
@@ -232,4 +217,3 @@ while ( defined( my $dir = $next->() ) ) {
         it under the same terms as Perl itself.
 
 =cut
-

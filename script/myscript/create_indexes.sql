@@ -1,3 +1,7 @@
+--
+-- Name: tours_pkey; Type: CONSTRAINT; Schema: public; Owner: unterwegs; Tablespace: 
+--
+
 ALTER TABLE ONLY tours
     ADD CONSTRAINT tours_pkey PRIMARY KEY (tour_id);
 
@@ -46,6 +50,4 @@ ALTER TABLE ONLY track_points
 
 ALTER TABLE ONLY tracks
     ADD CONSTRAINT tracks_tour_id_fkey FOREIGN KEY (tour_id) REFERENCES tours(tour_id);
-
-
 

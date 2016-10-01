@@ -49,14 +49,25 @@ unterwegs.Tracks.prototype.getList = function(page) {
 */
 unterwegs.Tracks.prototype.getTrack = function(ogc_fid) {
 
-    var url = this.baseURL_ + '/track/geojson';
-    url += '?ogc_fid=' + ogc_fid; 
+    var url = this.baseURL_ + '/track/' + ogc_fid; 
 
     return this.$http_.get(url).then(
         this.handleGetData_.bind(this)
     );
 }
 
+/**
+ * @param {number} ogc_fid Feature identifier
+ * @return {angular.$q.Promise} Promise.
+ * @export
+*/
+unterwegs.Tracks.prototype.getTrackPoints = function(ogc_fid) {
+
+    var url = this.baseURL_ + '/track/' + ogc_fid + '/trackpoints';
+    return this.$http_.get(url).then(
+        this.handleGetData_.bind(this)
+    );
+}
 
 /**
  * @param {angular.$http.Response} resp Ajax response.
@@ -66,6 +77,5 @@ unterwegs.Tracks.prototype.getTrack = function(ogc_fid) {
 unterwegs.Tracks.prototype.handleGetData_ = function(resp) {
     return resp.data;
 };
-
 
 unterwegs.module.service('unterwegsTracks', unterwegs.Tracks);
