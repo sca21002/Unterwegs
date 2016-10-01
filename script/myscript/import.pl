@@ -6,6 +6,8 @@ use English qw( -no_match_vars ) ;           # Avoids regex performance penalty
 use Acme::ProgressBar;
 use Path::Tiny;
 use Modern::Perl;
+use FindBin qw($Bin);
+use lib path($Bin)->parent(2)->child('lib')->stringify;
 use Unterwegs::Geo::GDAL::Dataset::Pg;
 use Unterwegs::Geo::GDAL::Dataset::GPX;
 use Unterwegs::Helper;
@@ -110,7 +112,7 @@ sub import_gpx_file {
                              
     my $track_points_count = $gpx_track_points->GetFeatureCount();
     if ( $track_points_count < 5 ) {
-        croak "Not enough track points";
+        carp "Not enough track points";
     } 
     if ($hrm_file->is_file) {
         warn("Count of Points in GPX ($track_points_count)" 

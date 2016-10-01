@@ -41,7 +41,7 @@ sub search_with_geojson_geometry {
         $cond,
         {   
             '+select' => [ 
-                \'ST_AsGeoJSON(wkb_geometry)',
+                \'ST_AsGeoJSON(ST_Transform(wkb_geometry, 3857))',
             ],
             '+as'     => [ 
                 'geojson_geometry' 

@@ -8,7 +8,7 @@ use base 'Catalyst::View::JSON';
 
 __PACKAGE__->config({
     expose_stash => [ qw(
-        page total records rows response
+        tracks tracks_total page
     ) ],
 });
 

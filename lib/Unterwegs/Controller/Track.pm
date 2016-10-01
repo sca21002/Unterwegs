@@ -34,10 +34,33 @@ sub tracks : Chained('/base') PathPart('track') CaptureArgs(0) {
 
 sub list : Chained('tracks') PathPart('list') Args(0) {
     my ( $self, $c ) = @_;
+
+    my $response;
+    my $page = $c->req->params->{page} || 1; 
+    my $entries_per_page = 5;
+
+    my $track_rs = $c->stash->{tracks}->search(
+        {},
+        {
+            columns => [qw(ogc_fid name cmt desc src number type tour_id)],
+            page => $page,
+            rows => $entries_per_page,
+        }
+    );
+
+    my @rows;
+    while (my $row = $track_rs->next) {
+        my $href = { $row->get_columns() };
+        push @rows, $href; 
+    }    
+ 
+    $response->{tracks} = \@rows;
+    $response->{page}    = $page;
+    $response->{tracks_total} = $track_rs->pager->total_entries;
    
-    $c->stash( 
-        json_url => $c->uri_for_action('track/json'),
-        template => 'track/list.tt',
+    $c->stash(
+        %$response,
+        current_view => 'JSON'
     );
 }
 

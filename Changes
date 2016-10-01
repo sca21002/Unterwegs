@@ -2,6 +2,8 @@ This file documents the revision history for Perl web application Unterwegs.
 
 {{$NEXT}}
 
+    - First minimal version with ngeo library
+
 0.003     2016-09-28 17:25:38+02:00 Europe/Berlin
 
     - Upgrade to Geo::GDAL 2.01 

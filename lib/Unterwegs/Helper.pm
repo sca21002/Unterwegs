@@ -10,15 +10,18 @@ use Unterwegs::Schema;
 
 sub get_connect_info {
 
-    my $config_dir = path(__FILE__)->parent(3); 
+    my $env = $ENV{UNTERWEGS_CONFIG} || $ENV{CATALYST_CONFIG};
+    my $config_dir = $env ? path($env) : path(__FILE__)->parent(3); 
     my $config_hash = Config::ZOMG->open(
         name => 'unterwegs',
         path => $config_dir,
     ) or confess "No config file in '$config_dir'";
     
     my $connect_info = $config_hash->{'Model::UnterwegsDB'}{connect_info};
+    $connect_info = normalize_connect_info(@$connect_info)
+        if (ref $connect_info eq 'ARRAY' );    
     confess "No database connect info" unless  $connect_info;
-    return normalize_connect_info(@$connect_info);
+    return $connect_info;
 }
 
 

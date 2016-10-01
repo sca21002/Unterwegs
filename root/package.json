@@ -10,6 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "angular": "^1.5.5",
+    "angular-float-thead": "^0.1.2",
     "angular-gettext": "^2.2.1",
     "angular-ui-date": "1.1.1",
     "bootstrap": "^3.3.6",

@@ -1,0 +1,45 @@
+<!doctype html>
+<html ng-app="unterwegsApp">
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="../build/unterwegs.css">
+  </head>
+  <body ng-controller="MainController as ctrl">
+    <header>
+        <div class="title">    
+        Unterwegs
+      </div>
+    </header>
+    <main>
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-md-7">
+            <div class="map-container">
+              <div id="map" ngeo-map="ctrl.map"></div>
+            </div>
+          </div>
+          <div class="col-md-5">
+            <table class="table table-condensed table-hover">
+              <thead></thead> 
+              <tfoot></tfoot>
+              <tbody>
+                <tr ng-repeat="track in ctrl.tracks" 
+                    ng-mouseenter="ctrl.hover(track.ogc_fid)">
+                  <td>
+                      <div>{{track.name}}</div>
+                      <div>{{track.src}}</div>  
+                  </td>    
+                </tr>     
+              </tbody>    
+            </table>
+          </div>    
+        </div>
+    </main>
+    <script src="../node_modules/angular/angular.js"></script>
+    <script src="../node_modules/angular-gettext/dist/angular-gettext.js"></script> 
+    <script src="../node_modules/angular-ui-date/dist/date.js"></script> 
+    <script src="../node_modules/angular-float-thead/angular-floatThead.js"></script> 
+    <script src="/@?main=js/app.js"></script>
+    <!-- <script src="../build/unterwegs.js"></script> -->    
+  </body>
+</html>
