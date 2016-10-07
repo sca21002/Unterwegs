@@ -2,6 +2,8 @@ This file documents the revision history for Perl web application Unterwegs.
 
 {{$NEXT}}
 
+0.008     2016-10-07 11:52:59+02:00 Europe/Berlin
+
     - Script for exporting tracks into files added
     - Import script: time zone correction for Polar GPS
 
