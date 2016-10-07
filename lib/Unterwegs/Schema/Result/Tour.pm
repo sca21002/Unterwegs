@@ -91,6 +91,20 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("tour_id");
 
+=head1 UNIQUE CONSTRAINTS
+
+=head2 C<tours_name_key>
+
+=over 4
+
+=item * L</name>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint("tours_name_key", ["name"]);
+
 =head1 RELATIONS
 
 =head2 tracks
@@ -109,8 +123,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07042 @ 2014-10-09 16:09:35
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:/IAeSBtQ5nx0Kri8Uq1mtg
+# Created by DBIx::Class::Schema::Loader v0.07045 @ 2016-10-06 11:20:31
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:rGW7vnK6TSRkk8Fcmki4xA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

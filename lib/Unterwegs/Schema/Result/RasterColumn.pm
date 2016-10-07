@@ -123,6 +123,11 @@ __PACKAGE__->table("raster_columns");
   data_type: 'geometry'
   is_nullable: 1
 
+=head2 spatial_index
+
+  data_type: 'boolean'
+  is_nullable: 1
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -158,11 +163,13 @@ __PACKAGE__->add_columns(
   { data_type => "boolean[]", is_nullable => 1 },
   "extent",
   { data_type => "geometry", is_nullable => 1 },
+  "spatial_index",
+  { data_type => "boolean", is_nullable => 1 },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07042 @ 2014-10-09 16:09:35
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:XRQLMkjRdGad+BQwT4mr7w
+# Created by DBIx::Class::Schema::Loader v0.07045 @ 2016-10-06 11:20:31
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ajeVb6UAowzr/FDkhKiDog
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

@@ -16,6 +16,7 @@ use Carp qw(carp croak);
 use Path::Iterator::Rule;
 use Log::Log4perl qw(:easy);
 use Log::Log4perl::Util::TimeTracker;
+use DateTime::Format::Strptime;
 use Data::Dumper;
 
 $Data::Dumper::Maxdepth = 5;
@@ -52,7 +53,7 @@ my $gpx_path = shift @ARGV or pod2usage( -verbose => 1 );
 
 $gpx_path = path($gpx_path);
 
-croak("Path to gpx files: $gpx_path doesn't exist") unless $gpx_path->is_dir;
+croak("Path to gpx files: $gpx_path doesn't exist") unless $gpx_path->exists;
 
 my $gpx_extension = qr/\.gpx$/;
 
@@ -62,30 +63,42 @@ my $tour_rs = $schema->resultset('Tour');
 
 my $timer = Log::Log4perl::Util::TimeTracker->new();
 
-### iterator for walking recursivly and searching for gpx files
+if ($gpx_path->is_dir) {
 
-my $rule = Path::Iterator::Rule->new;
-$rule->dir;
-my $next = $rule->iter( $gpx_path, {sorted => 1} );
+    ### iterator for walking recursivly and searching for gpx files
 
-while ( defined( my $dir = $next->() ) ) {
-    my $path = path($dir);
-    next unless $path->children( qr/$gpx_extension/ );
-    import_tour($path);
+    my $rule = Path::Iterator::Rule->new;
+    $rule->dir;
+    my $next = $rule->iter( $gpx_path, {sorted => 1} );
+
+    while ( defined( my $dir = $next->() ) ) {
+        my $path = path($dir);
+        next unless $path->children( qr/$gpx_extension/ );
+        import_tour($path);
+    }
+} elsif ($gpx_path->is_file) {
+
+
+  my $tour_name = shift @ARGV or pod2usage("Name of the Tour is missing");
+
+  my $tour = $tour_rs->find_or_create({name => $tour_name});
+
+  pod2usage("Tour '$tour_name' not found in the database") unless $tour; 
+
+  import_gpx_file($gpx_path, $tour->tour_id);
 }
 
 sub import_tour {
     my $dir = shift;
-
     INFO("Working on tour: ", $dir->basename);
-    my $tour = $tour_rs->create({name => $dir->basename});
+    my $tour = $tour_rs->find_or_create({name => $dir->basename});
     my @gpx_files = $dir->children($gpx_extension);
     foreach my $gpx_file(@gpx_files) {
         import_gpx_file($gpx_file, $tour->tour_id);
     }
     my $msecs = $timer->milliseconds();
     INFO("Elapsed: ", sprintf(
-        "%d hr %d min %d sec", $msecs/(3600*24), $msecs/3600, $msecs/1000
+        "%d hr %d min %d sec", $msecs/(3600_000), $msecs/(60_000), $msecs/1000
     ) );  
 }
 
@@ -140,6 +153,14 @@ sub import_gpx_file {
     
     INFO("\tGPX-File: ", $gpx_file->basename);
 
+    # Polar GPS saves time according to the set clock time
+    my $time_zone = $gps_device eq 'Polar RC3 GPS' ? 'Europe/Berlin' : 'UTC'; 
+
+    my $strp = DateTime::Format::Strptime->new(
+    	pattern   => '%FT%TZ',
+    	locale    => 'de_DE',
+    	time_zone => $time_zone,
+	);
 
     unless( is_new($gpx_file) ) {
         INFO("\t\tis already imported!");
@@ -160,16 +181,23 @@ sub import_gpx_file {
         my $track = shift;
 
         INFO("\t\tTrack: ", $track->{name});
-        $track->{src} = $gpx_file->basename('.gpx');
-        $track->{desc} = $gps_device;
+        $track->{file} = $gpx_file->basename('.gpx');
+        $track->{src} = $gps_device;
         $track->{tour_id} = $tour_id;
 
         foreach my $track_point ( @{ $track->{track_points} } ) {
-            my $timestr = $track_point->{time};
-            if ( exists $hrdata->{ $timestr } ) {
-                @{ $track_point }{ qw(hr ele speed) } 
-                    =  @{ $hrdata->{$timestr} }{ qw(heart_rate altitude speed) };
-            }
+
+            if (my $timestr = $track_point->{time}) {
+
+                if ( exists $hrdata->{ $timestr } ) {
+                    @{ $track_point }{ qw(hr ele speed) } 
+                        =  @{ $hrdata->{$timestr} }{ qw(heart_rate altitude speed) };
+                }
+                
+                my $dt = $strp->parse_datetime($timestr);
+                $dt->set_time_zone('UTC') unless $dt->time_zone->name eq 'UTC';
+    		    $track_point->{time} = $dt;            
+            }    
         }
 
         $track_rs->create($track);

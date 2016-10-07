@@ -47,21 +47,21 @@ __PACKAGE__->table("geometry_columns");
 
 =head2 f_table_schema
 
-  data_type: 'varchar'
+  data_type: 'name'
   is_nullable: 1
-  size: 256
+  size: 64
 
 =head2 f_table_name
 
-  data_type: 'varchar'
+  data_type: 'name'
   is_nullable: 1
-  size: 256
+  size: 64
 
 =head2 f_geometry_column
 
-  data_type: 'varchar'
+  data_type: 'name'
   is_nullable: 1
-  size: 256
+  size: 64
 
 =head2 coord_dimension
 
@@ -85,11 +85,11 @@ __PACKAGE__->add_columns(
   "f_table_catalog",
   { data_type => "varchar", is_nullable => 1, size => 256 },
   "f_table_schema",
-  { data_type => "varchar", is_nullable => 1, size => 256 },
+  { data_type => "name", is_nullable => 1, size => 64 },
   "f_table_name",
-  { data_type => "varchar", is_nullable => 1, size => 256 },
+  { data_type => "name", is_nullable => 1, size => 64 },
   "f_geometry_column",
-  { data_type => "varchar", is_nullable => 1, size => 256 },
+  { data_type => "name", is_nullable => 1, size => 64 },
   "coord_dimension",
   { data_type => "integer", is_nullable => 1 },
   "srid",
@@ -99,8 +99,8 @@ __PACKAGE__->add_columns(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07042 @ 2014-10-09 16:09:35
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Dk7bN88/roXUby3Ui3bEig
+# Created by DBIx::Class::Schema::Loader v0.07045 @ 2016-10-06 11:20:31
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:UqZsBAREBZYoS+Q0scLBrA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

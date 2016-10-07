@@ -128,6 +128,38 @@ __PACKAGE__->table("tracks");
   is_foreign_key: 1
   is_nullable: 1
 
+=head2 file
+
+  data_type: 'text'
+  is_nullable: 1
+  original: {data_type => "varchar"}
+
+=head2 start
+
+  data_type: 'timestamp with time zone'
+  is_nullable: 1
+
+=head2 end
+
+  data_type: 'timestamp with time zone'
+  is_nullable: 1
+
+=head2 duration
+
+  data_type: 'interval'
+  is_nullable: 1
+  size: 0
+
+=head2 len
+
+  data_type: 'integer'
+  is_nullable: 1
+
+=head2 avg_speed
+
+  data_type: 'double precision'
+  is_nullable: 1
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -210,6 +242,22 @@ __PACKAGE__->add_columns(
   },
   "tour_id",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 1 },
+  "file",
+  {
+    data_type   => "text",
+    is_nullable => 1,
+    original    => { data_type => "varchar" },
+  },
+  "start",
+  { data_type => "timestamp with time zone", is_nullable => 1 },
+  "end",
+  { data_type => "timestamp with time zone", is_nullable => 1 },
+  "duration",
+  { data_type => "interval", is_nullable => 1, size => 0 },
+  "len",
+  { data_type => "integer", is_nullable => 1 },
+  "avg_speed",
+  { data_type => "double precision", is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -262,8 +310,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07042 @ 2014-10-09 16:09:35
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:LEn+vbJuDoDS3lcce+6f1w
+# Created by DBIx::Class::Schema::Loader v0.07045 @ 2016-10-07 11:42:46
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:oZzZuQkD6xLOWvA/BGEGRQ
 
 use DateTime::Format::Pg;
 use Geo::JSON;

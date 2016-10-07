@@ -2,12 +2,16 @@
 -- PostgreSQL database dump
 --
 
+-- Dumped from database version 9.5.4
+-- Dumped by pg_dump version 9.5.4
+
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
+SET row_security = off;
 
 SET search_path = public, pg_catalog;
 
@@ -18,6 +22,7 @@ DROP INDEX public.track_points_geom_idx;
 ALTER TABLE ONLY public.tracks DROP CONSTRAINT tracks_pkey;
 ALTER TABLE ONLY public.track_points DROP CONSTRAINT track_points_pkey;
 ALTER TABLE ONLY public.tours DROP CONSTRAINT tours_pkey;
+ALTER TABLE ONLY public.tours DROP CONSTRAINT tours_name_key;
 ALTER TABLE public.tracks ALTER COLUMN ogc_fid DROP DEFAULT;
 ALTER TABLE public.track_points ALTER COLUMN ogc_fid DROP DEFAULT;
 ALTER TABLE public.tours ALTER COLUMN tour_id DROP DEFAULT;
@@ -81,7 +86,7 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 
 --
--- Name: tours; Type: TABLE; Schema: public; Owner: unterwegs; Tablespace: 
+-- Name: tours; Type: TABLE; Schema: public; Owner: unterwegs
 --
 
 CREATE TABLE tours (
@@ -92,7 +97,7 @@ CREATE TABLE tours (
 );
 
 
-ALTER TABLE public.tours OWNER TO unterwegs;
+ALTER TABLE tours OWNER TO unterwegs;
 
 --
 -- Name: tours_tour_id_seq; Type: SEQUENCE; Schema: public; Owner: unterwegs
@@ -106,7 +111,7 @@ CREATE SEQUENCE tours_tour_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.tours_tour_id_seq OWNER TO unterwegs;
+ALTER TABLE tours_tour_id_seq OWNER TO unterwegs;
 
 --
 -- Name: tours_tour_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: unterwegs
@@ -116,7 +121,7 @@ ALTER SEQUENCE tours_tour_id_seq OWNED BY tours.tour_id;
 
 
 --
--- Name: track_points; Type: TABLE; Schema: public; Owner: unterwegs; Tablespace: 
+-- Name: track_points; Type: TABLE; Schema: public; Owner: unterwegs
 --
 
 CREATE TABLE track_points (
@@ -153,7 +158,7 @@ CREATE TABLE track_points (
 );
 
 
-ALTER TABLE public.track_points OWNER TO unterwegs;
+ALTER TABLE track_points OWNER TO unterwegs;
 
 --
 -- Name: track_points_ogc_fid_seq; Type: SEQUENCE; Schema: public; Owner: unterwegs
@@ -167,7 +172,7 @@ CREATE SEQUENCE track_points_ogc_fid_seq
     CACHE 1;
 
 
-ALTER TABLE public.track_points_ogc_fid_seq OWNER TO unterwegs;
+ALTER TABLE track_points_ogc_fid_seq OWNER TO unterwegs;
 
 --
 -- Name: track_points_ogc_fid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: unterwegs
@@ -177,7 +182,7 @@ ALTER SEQUENCE track_points_ogc_fid_seq OWNED BY track_points.ogc_fid;
 
 
 --
--- Name: tracks; Type: TABLE; Schema: public; Owner: unterwegs; Tablespace: 
+-- Name: tracks; Type: TABLE; Schema: public; Owner: unterwegs
 --
 
 CREATE TABLE tracks (
@@ -195,11 +200,17 @@ CREATE TABLE tracks (
     link2_type character varying,
     number integer,
     type character varying,
-    tour_id integer
+    tour_id integer,
+    file character varying,
+    start timestamp with time zone,
+    "end" timestamp with time zone,
+    duration interval hour to second(0),
+    len integer,
+    avg_speed double precision
 );
 
 
-ALTER TABLE public.tracks OWNER TO unterwegs;
+ALTER TABLE tracks OWNER TO unterwegs;
 
 --
 -- Name: tracks_ogc_fid_seq; Type: SEQUENCE; Schema: public; Owner: unterwegs
@@ -213,7 +224,7 @@ CREATE SEQUENCE tracks_ogc_fid_seq
     CACHE 1;
 
 
-ALTER TABLE public.tracks_ogc_fid_seq OWNER TO unterwegs;
+ALTER TABLE tracks_ogc_fid_seq OWNER TO unterwegs;
 
 --
 -- Name: tracks_ogc_fid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: unterwegs
@@ -244,7 +255,15 @@ ALTER TABLE ONLY tracks ALTER COLUMN ogc_fid SET DEFAULT nextval('tracks_ogc_fid
 
 
 --
--- Name: tours_pkey; Type: CONSTRAINT; Schema: public; Owner: unterwegs; Tablespace: 
+-- Name: tours_name_key; Type: CONSTRAINT; Schema: public; Owner: unterwegs
+--
+
+ALTER TABLE ONLY tours
+    ADD CONSTRAINT tours_name_key UNIQUE (name);
+
+
+--
+-- Name: tours_pkey; Type: CONSTRAINT; Schema: public; Owner: unterwegs
 --
 
 ALTER TABLE ONLY tours
@@ -252,7 +271,7 @@ ALTER TABLE ONLY tours
 
 
 --
--- Name: track_points_pkey; Type: CONSTRAINT; Schema: public; Owner: unterwegs; Tablespace: 
+-- Name: track_points_pkey; Type: CONSTRAINT; Schema: public; Owner: unterwegs
 --
 
 ALTER TABLE ONLY track_points
@@ -260,7 +279,7 @@ ALTER TABLE ONLY track_points
 
 
 --
--- Name: tracks_pkey; Type: CONSTRAINT; Schema: public; Owner: unterwegs; Tablespace: 
+-- Name: tracks_pkey; Type: CONSTRAINT; Schema: public; Owner: unterwegs
 --
 
 ALTER TABLE ONLY tracks
@@ -268,14 +287,14 @@ ALTER TABLE ONLY tracks
 
 
 --
--- Name: track_points_geom_idx; Type: INDEX; Schema: public; Owner: unterwegs; Tablespace: 
+-- Name: track_points_geom_idx; Type: INDEX; Schema: public; Owner: unterwegs
 --
 
 CREATE INDEX track_points_geom_idx ON track_points USING gist (wkb_geometry);
 
 
 --
--- Name: tracks_geom_idx; Type: INDEX; Schema: public; Owner: unterwegs; Tablespace: 
+-- Name: tracks_geom_idx; Type: INDEX; Schema: public; Owner: unterwegs
 --
 
 CREATE INDEX tracks_geom_idx ON tracks USING gist (wkb_geometry);
