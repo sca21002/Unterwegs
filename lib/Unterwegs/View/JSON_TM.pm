@@ -1,4 +1,4 @@
-package Unterwegs::View::JSON;
+package Unterwegs::View::JSON_TM;
 
 # ABSTRACT: Catalyst JSON View
 
@@ -7,14 +7,12 @@ use base 'Catalyst::View::JSON';
 #use Data::Dumper;
 
 __PACKAGE__->config({
-    expose_stash => [ qw(
-        tracks tracks_total page travel_modes
-    ) ],
+    expose_stash => 'travel_modes'
 });
 
 =head1 NAME
 
-Unterwegs::View::JSON - Catalyst JSON View
+Unterwegs::View::JSON_TM - Catalyst JSON View
 
 =head1 SYNOPSIS
 

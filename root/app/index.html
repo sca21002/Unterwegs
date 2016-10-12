@@ -6,11 +6,46 @@
   </head>
   <body ng-controller="MainController as ctrl">
     <header>
-        <div class="title">    
+      <div class="title">    
         Unterwegs
       </div>
     </header>
     <main>
+      <ngeo-modal ng-model="ctrl.modalShown">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">{{ctrl.track.file}}</h4>
+        </div>
+        <div class="modal-body">
+          <form 
+            name = "track"
+            role = "form"
+            ng-submit = "ctrl.updateTrack()">
+            <div class = "form-group">
+              <label for="trackName">Name des Tracks</label>
+              <input
+                type = "text" 
+                class ="form-control"
+                name = "trackName"
+                ng-model="ctrl.track.name"
+                placeholder="Track name" />
+            </div>
+            <div class = "form-group">
+              <label for="trackType">Typ des Tracks</label>
+              <select 
+                class ="form-control"
+                name = "trackType"
+                ng-model="ctrl.track.travel_mode_id"
+                ng-options="mode.id as mode.name for mode in ctrl.travelModes"
+                placeholder="Typ des Tracks">
+              </select>  
+            </div>
+            <div class="form-group">
+              <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+          </form>
+        </div>
+      </ngeo-modal>    
       <div class="container-fluid">
         <div class="row">
           <div class="col-md-7">
@@ -39,25 +74,45 @@
               </tfoot>    
               <tbody>
                 <tr ng-repeat="track in ctrl.tracks" 
-                    ng-mouseenter="ctrl.hover(track.ogc_fid)">
+                    ng-mouseenter="ctrl.hover(track.ogc_fid)"
+                    ng-click="ctrl.click(track.ogc_fid)">
                   <td>
-                    <div>{{track.name}}</div>
-                    <div>{{track.src}}</div>  
-                    <div>{{track.len | number:2}} km</div>
-                    <div>{{track.start}} - {{track.end}}</div>    
+                    <div>{{track.name}} ({{track.file}})
+	                  <i class="material-icons md-14"
+                        ng-show="track.icon === 'Laufen'">directions_run
+                      </i>
+	                  <i class="material-icons md-14"
+                        ng-show="track.icon === 'Rad'">directions_bike
+                      </i>
+	                  <i class="material-icons md-14"
+                        ng-show="track.icon === 'Gehen'">directions_walk
+                      </i>
+                    </div>
+                    <div>{{track.len / 1000 | number:2}} km 
+                      <span ng-show="track.type != 'Laufen'">
+                        ({{track.avg_speed | number:2}} km/h)
+                      </span>
+                      <span ng-show="track.type == 'Laufen'">
+                        ({{ctrl.velocity_in_min_per_km(track.avg_speed)}} min/km)
+                      </span>
+                    <div>{{track.start}}-{{track.end}} ({{track.duration}})</div>    
                   </td>    
                 </tr>     
               </tbody>    
             </table>
           </div>    
         </div>
+      </div>  
     </main>
+    <!--load jquery before angular.js -->
+    <script src="../node_modules/jquery/dist/jquery.js"></script>
     <script src="../node_modules/angular/angular.js"></script>
     <script src="../node_modules/angular-gettext/dist/angular-gettext.js"></script> 
     <script src="../node_modules/angular-ui-date/dist/date.js"></script> 
     <script src="../node_modules/ui-bootstrap-custom/ui-bootstrap-custom-tpls-2.1.4.min.js"></script> 
     <script src="../node_modules/angular-float-thead/angular-floatThead.js"></script> 
+    <script src="../node_modules/bootstrap/dist/js/bootstrap.js"></script>
     <script src="/@?main=js/app.js"></script>
-    <!-- <script src="../build/unterwegs.js"></script> -->     
+    <!-- <script src="../build/unterwegs.js"></script> -->   
   </body>
 </html>

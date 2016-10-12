@@ -15,17 +15,23 @@ SET row_security = off;
 
 SET search_path = public, pg_catalog;
 
+ALTER TABLE ONLY public.tracks DROP CONSTRAINT tracks_travel_mode_id_fkey;
 ALTER TABLE ONLY public.tracks DROP CONSTRAINT tracks_tour_id_fkey;
 ALTER TABLE ONLY public.track_points DROP CONSTRAINT track_points_track_fid_fkey;
 DROP INDEX public.tracks_geom_idx;
 DROP INDEX public.track_points_geom_idx;
+ALTER TABLE ONLY public.travel_modes DROP CONSTRAINT travel_mode_pkey;
+ALTER TABLE ONLY public.travel_modes DROP CONSTRAINT travel_mode_name_key;
 ALTER TABLE ONLY public.tracks DROP CONSTRAINT tracks_pkey;
 ALTER TABLE ONLY public.track_points DROP CONSTRAINT track_points_pkey;
 ALTER TABLE ONLY public.tours DROP CONSTRAINT tours_pkey;
 ALTER TABLE ONLY public.tours DROP CONSTRAINT tours_name_key;
+ALTER TABLE public.travel_modes ALTER COLUMN id DROP DEFAULT;
 ALTER TABLE public.tracks ALTER COLUMN ogc_fid DROP DEFAULT;
 ALTER TABLE public.track_points ALTER COLUMN ogc_fid DROP DEFAULT;
 ALTER TABLE public.tours ALTER COLUMN tour_id DROP DEFAULT;
+DROP SEQUENCE public.travel_modes_travel_mode_id_seq;
+DROP TABLE public.travel_modes;
 DROP SEQUENCE public.tracks_ogc_fid_seq;
 DROP TABLE public.tracks;
 DROP SEQUENCE public.track_points_ogc_fid_seq;
@@ -205,8 +211,9 @@ CREATE TABLE tracks (
     start timestamp with time zone,
     "end" timestamp with time zone,
     duration interval hour to second(0),
-    len integer,
-    avg_speed double precision
+    len bigint,
+    avg_speed double precision,
+    travel_mode_id integer
 );
 
 
@@ -234,6 +241,40 @@ ALTER SEQUENCE tracks_ogc_fid_seq OWNED BY tracks.ogc_fid;
 
 
 --
+-- Name: travel_modes; Type: TABLE; Schema: public; Owner: unterwegs
+--
+
+CREATE TABLE travel_modes (
+    id integer NOT NULL,
+    name character varying(255),
+    icon character varying(255)
+);
+
+
+ALTER TABLE travel_modes OWNER TO unterwegs;
+
+--
+-- Name: travel_modes_travel_mode_id_seq; Type: SEQUENCE; Schema: public; Owner: unterwegs
+--
+
+CREATE SEQUENCE travel_modes_travel_mode_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE travel_modes_travel_mode_id_seq OWNER TO unterwegs;
+
+--
+-- Name: travel_modes_travel_mode_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: unterwegs
+--
+
+ALTER SEQUENCE travel_modes_travel_mode_id_seq OWNED BY travel_modes.id;
+
+
+--
 -- Name: tour_id; Type: DEFAULT; Schema: public; Owner: unterwegs
 --
 
@@ -252,6 +293,13 @@ ALTER TABLE ONLY track_points ALTER COLUMN ogc_fid SET DEFAULT nextval('track_po
 --
 
 ALTER TABLE ONLY tracks ALTER COLUMN ogc_fid SET DEFAULT nextval('tracks_ogc_fid_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: unterwegs
+--
+
+ALTER TABLE ONLY travel_modes ALTER COLUMN id SET DEFAULT nextval('travel_modes_travel_mode_id_seq'::regclass);
 
 
 --
@@ -287,6 +335,22 @@ ALTER TABLE ONLY tracks
 
 
 --
+-- Name: travel_mode_name_key; Type: CONSTRAINT; Schema: public; Owner: unterwegs
+--
+
+ALTER TABLE ONLY travel_modes
+    ADD CONSTRAINT travel_mode_name_key UNIQUE (name);
+
+
+--
+-- Name: travel_mode_pkey; Type: CONSTRAINT; Schema: public; Owner: unterwegs
+--
+
+ALTER TABLE ONLY travel_modes
+    ADD CONSTRAINT travel_mode_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: track_points_geom_idx; Type: INDEX; Schema: public; Owner: unterwegs
 --
 
@@ -314,6 +378,14 @@ ALTER TABLE ONLY track_points
 
 ALTER TABLE ONLY tracks
     ADD CONSTRAINT tracks_tour_id_fkey FOREIGN KEY (tour_id) REFERENCES tours(tour_id);
+
+
+--
+-- Name: tracks_travel_mode_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: unterwegs
+--
+
+ALTER TABLE ONLY tracks
+    ADD CONSTRAINT tracks_travel_mode_id_fkey FOREIGN KEY (travel_mode_id) REFERENCES travel_modes(id);
 
 
 --

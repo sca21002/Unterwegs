@@ -3,11 +3,11 @@ use warnings;
 
 use Unterwegs;
 use Plack::Builder;
-use Plack::Middleware::CrossOrigin;
 
 my $app = Unterwegs->apply_default_middlewares(Unterwegs->psgi_app);
 builder {
-    enable 'CrossOrigin', origins => '*';
+    # enable 'Debug', panels => [ qw(Response DBITrace Memory Timer DBIC::QueryLog) ];
+    enable 'CrossOrigin', origins => '*', headers => '*';
     $app;
 };
 

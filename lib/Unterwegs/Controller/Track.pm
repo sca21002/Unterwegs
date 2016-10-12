@@ -39,15 +39,28 @@ sub list : Chained('tracks') PathPart('list') Args(0) {
     my $page = $c->req->params->{page} || 1; 
     my $entries_per_page = 5;
 
-    my $track_rs = $c->stash->{tracks}->search_with_len(
-        {}, $page, $entries_per_page
+    my $track_rs = $c->stash->{tracks}->search(
+        {},
+        {   
+            select => [ qw( 
+                ogc_fid name cmt desc src number tour_id file start end
+                duration len avg_speed travel_mode_id travel_mode.icon
+            ) ],
+            as     => [ qw( 
+                ogc_fid name cmt desc src number tour_id file start end
+                duration len avg_speed travel_mode_id icon
+            ) ],
+            join     => 'travel_mode',
+            page     => $page,
+            rows     => $entries_per_page,
+            order_by => {-desc => 'start'}, 
+        },
     );
 
     my @rows;
     while (my $track = $track_rs->next) {
-        my $href = { $track->get_columns() };
-        my $start = $track->start;
-        my $end   = $track->end; 
+        my $href = { $track->get_inflated_columns() };
+        my ($start, $end) = @{$href}{qw(start end)};
         $href->{start} = $start->strftime('%d.%m.%Y %H:%M'),
         $href->{end} = 
                $start->year  == $end->year
@@ -55,7 +68,8 @@ sub list : Chained('tracks') PathPart('list') Args(0) {
             && $start->day   == $end->day 
             ? $end->strftime('%H:%M') 
             : $end->strftime('%d.%m.%Y %H:%M');
-        push @rows, $href; 
+            #$href->{icon} = $track->get_column('icon');
+        push @rows, $href;
     }    
  
     $response->{tracks} = \@rows;
@@ -67,61 +81,6 @@ sub list : Chained('tracks') PathPart('list') Args(0) {
         current_view => 'JSON'
     );
 }
-
-#sub json : Chained('tracks') PathPart('json') Args(0) {
-#    my ( $self, $c ) = @_;
-#
-#    my $data = $c->req->params;
-#
-#    my $page = $data->{page} || 1;
-#    my $entries_per_page = $data->{rows} || 10;
-#    my $sidx = $data->{sidx} || 'ogc_fid';
-#    my $sord = $data->{sord} || 'asc';
-#
-#    my $tracks_rs = $c->stash->{tracks};
-#
-#    $tracks_rs = $tracks_rs->search_with_len();
-#    warn "Bin nach search_with_len";
-#    $tracks_rs = $tracks_rs->search(
-#        {},
-#        {
-#            page => $page,
-#            rows => $entries_per_page,
-#            order_by => {"-$sord" => $sidx},
-#        },
-#    );
-#
-#    my $response;
-#    $response->{page} = $page;
-#    $response->{total} = $tracks_rs->pager->last_page;
-#    $response->{records} = $tracks_rs->pager->total_entries;
-#    my @rows; 
-#    while (my $track = $tracks_rs->next) {
-#        my $row->{ogs_fid} = $track->ogc_fid;
-#        my $start = $track->start();
-#        my $end   = $track->end();
-#        $row->{cell} = [
-#            $track->ogc_fid,
-#            $track->tour  && $track->tour->name || '',            
-#            $track->name,
-#            $track->src,
-#            $track->get_column('len'),
-#            $start->strftime('%d.%m.%Y %H:%M'),
-#            (    $start->year  == $end->year
-#              && $start->month == $end->month
-#              && $start->day   == $end->day 
-#              ? $end->strftime('%H:%M') 
-#              : $end->strftime('%d.%m.%Y %H:%M')
-#            )
-#        ];
-#        push @{ $response->{rows} }, $row;
-#    }
-#
-#    $c->stash(
-#        %$response,
-#        current_view => 'JSON',
-#    );
-#}
 
 sub track : Chained('tracks') PathPart('') CaptureArgs(1) {
     my ($self, $c, $ogc_fid) = @_;
@@ -175,6 +134,27 @@ sub trackpoints : Chained('track') PathPart('trackpoints') Args(0) {
         feature => $fcol,
         current_view => 'GeoJSON'
     );
+} 
+
+sub update : Chained('track') PathPart('update') Args(0) {
+    my ($self, $c) = @_;
+
+    my $track_rs = $c->stash->{tracks};
+    my $ogc_fid   = $c->stash->{ogc_fid};
+
+    my $track = $track_rs->find($ogc_fid);
+
+    my $data = $c->req->body_data;
+
+    my %columns;
+    @columns{qw(cmt travel_mode_id tour_id desc name)} 
+        = @{$data}{qw(cmt travel_mode_id tour_id desc name)};
+
+    $c->log->debug(Dumper(\%columns));
+
+    $track->update(\%columns);
+    
+    $c->response->body('ok');
 } 
 
 =encoding utf8

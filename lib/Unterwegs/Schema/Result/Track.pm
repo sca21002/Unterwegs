@@ -152,12 +152,18 @@ __PACKAGE__->table("tracks");
 
 =head2 len
 
-  data_type: 'integer'
+  data_type: 'bigint'
   is_nullable: 1
 
 =head2 avg_speed
 
   data_type: 'double precision'
+  is_nullable: 1
+
+=head2 travel_mode_id
+
+  data_type: 'integer'
+  is_foreign_key: 1
   is_nullable: 1
 
 =cut
@@ -255,9 +261,11 @@ __PACKAGE__->add_columns(
   "duration",
   { data_type => "interval", is_nullable => 1, size => 0 },
   "len",
-  { data_type => "integer", is_nullable => 1 },
+  { data_type => "bigint", is_nullable => 1 },
   "avg_speed",
   { data_type => "double precision", is_nullable => 1 },
+  "travel_mode_id",
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -309,9 +317,29 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 travel_mode
 
-# Created by DBIx::Class::Schema::Loader v0.07045 @ 2016-10-07 11:42:46
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:oZzZuQkD6xLOWvA/BGEGRQ
+Type: belongs_to
+
+Related object: L<Unterwegs::Schema::Result::TravelMode>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "travel_mode",
+  "Unterwegs::Schema::Result::TravelMode",
+  { id => "travel_mode_id" },
+  {
+    is_deferrable => 0,
+    join_type     => "LEFT",
+    on_delete     => "NO ACTION",
+    on_update     => "NO ACTION",
+  },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07045 @ 2016-10-11 09:29:51
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:4hqosAdo605b4FkHCmpVGA
 
 use DateTime::Format::Pg;
 use Geo::JSON;

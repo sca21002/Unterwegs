@@ -82,6 +82,7 @@ _ngeo_folder = '' if ngeo_folder is UNDEFINED else ngeo_folder
 % elif src_set == 'contribs_unterwegs':
       
 % endif
+      "externs/unterwegsx.js",
       "node_modules/ngeo/externs/ngeox.js",
       "node_modules/ngeo/externs/mapfish-print-v3.js"
     ],

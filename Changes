@@ -2,6 +2,8 @@ This file documents the revision history for Perl web application Unterwegs.
 
 {{$NEXT}}
 
+    - A form to edit track attributes is added
+
 0.008     2016-10-07 11:52:59+02:00 Europe/Berlin
 
     - Script for exporting tracks into files added

@@ -11,6 +11,7 @@ goog.require('ol');
  */
 goog.require('ngeo.mapDirective');
 /** @suppress {extraRequire} */
+goog.require('ngeo.modalDirective');
 goog.require('ol.Map');
 goog.require('ol.View');
 goog.require('ol.layer.Tile');
@@ -21,10 +22,12 @@ goog.require('ol.style.Style');
 goog.require('ol.style.Fill');
 goog.require('ol.style.Stroke');
 goog.require('ol.style.Text');
+goog.require('ol.style.Circle');
 // goog.require('ol.style.Icon');
 goog.require('ol.format.GeoJSON');
 goog.require('ol.geom.Point');
-goog.require('unterwegs.Tracks');
+goog.require('unterwegs.Track');
+goog.require('unterwegs.TravelModes');
 
 /** @type {!angular.Module} **/
 app.module = angular.module('unterwegsApp', [unterwegs.module.name, 'ui.bootstrap']);
@@ -38,14 +41,34 @@ app.module.constant('mapboxURL', 'https://api.mapbox.com/styles/v1/' +
 
 
 /**
- * @param {unterwegs.Tracks} unterwegsTracks service
+ * @param {unterwegs.Track} unterwegsTrack service
+ * @param {unterwegs.TravelModes} unterwegsTravelModes service
  * @constructor
  * @ngInject
  */
+app.MainController = function(mapboxURL, unterwegsTrack, unterwegsTravelModes) {
 
-app.MainController = function(mapboxURL, unterwegsTracks) {
 
-  this.unterwegsTracks = unterwegsTracks;
+  this.unterwegsTrack = unterwegsTrack;
+  this.unterwegsTravelModes = unterwegsTravelModes;
+            
+  /**
+   * @type {boolean}
+   * @export
+   */
+  this.modalShown = false;
+
+  /**
+   * @type {Object}
+   * @export
+   */
+  this.track = {}; 
+
+  /**
+   * @type {Array.<string>}
+   * @export
+   */
+  this.travelModes = []; 
 
   this.center = [10.581, 49.682];
   this.zoom = 8;
@@ -68,7 +91,6 @@ app.MainController = function(mapboxURL, unterwegsTracks) {
   });
 
   this.trackStyleFunction = function(feature, resolution) {
-    console.log("Resolution: ", resolution);
     var multiLineString = /** @type{ol.geom.MultiLineString} */
  		(feature.getGeometry());  
     var styles = [
@@ -148,7 +170,7 @@ app.MainController = function(mapboxURL, unterwegsTracks) {
   });
 
   this.updateList = function() {
-    unterwegsTracks.getList(this.page).then(function(data){
+    unterwegsTrack.getList(this.page).then(function(data){
       /**
        *  @type {Array.<Object>}
        *  @export
@@ -183,7 +205,7 @@ app.MainController.prototype.hover = function(ogc_fid) {
       /** @type {ol.source.Vector} */ (this.trackPointSource);
     var geojsonFormat = new ol.format.GeoJSON();
 
-    this.unterwegsTracks.getTrack(ogc_fid).
+    this.unterwegsTrack.getTrack(ogc_fid).
     then(function(geoJSON){
       var feature = /** @type {ol.Feature} */ 
           (geojsonFormat.readFeature(geoJSON));
@@ -196,7 +218,7 @@ app.MainController.prototype.hover = function(ogc_fid) {
         featureGeometry, mapSize,
         /** @type {olx.view.FitOptions} */ ({maxZoom: 16}));
     });
-//    this.unterwegsTracks.getTrackPoints(ogc_fid).
+//    this.unterwegsTrack.getTrackPoints(ogc_fid).
 //    then(function(geoJSON){
 //      var features = /** @type {ol.Features} */ 
 //          (geojsonFormat.readFeatures(geoJSON));
@@ -206,6 +228,22 @@ app.MainController.prototype.hover = function(ogc_fid) {
 };
 
 /**
+ * @param {number} ogc_fid Feature identifier
+ * @export
+ */
+app.MainController.prototype.click = function(ogc_fid) {
+  this.modalShown = true;
+  this.track = this.tracks.find(function(track) {
+    return track.ogc_fid === ogc_fid;
+  });
+  this.unterwegsTravelModes.getList().then(function(travelModes){
+      this.travelModes = travelModes;
+  }.bind(this));     
+};
+
+
+/**
+/**
  * @export
  */
 app.MainController.prototype.pageChanged = function() {
@@ -213,6 +251,34 @@ app.MainController.prototype.pageChanged = function() {
     if (this.page !== this.fetchedPage) {
       this.updateList();
     }
+};
+
+/**
+/**
+ * @export
+ */
+app.MainController.prototype.updateTrack = function() {
+    this.modalShown = false;
+    console.log('in updateTrack');
+    this.unterwegsTrack.update(this.track).then(function(){
+        console.log('Update ok!');
+        this.updateList();
+    }.bind(this));
+};
+
+/**
+ * @param {number} speed Velocity in km per hour
+ * @export
+ */
+app.MainController.prototype.velocity_in_min_per_km = function(speed) {
+  var velocity = 60 / speed;    // [ min / km ] 
+  var minutes = Math.floor(velocity);
+  var seconds = Math.round(velocity * 60) % 60;
+  var secs = seconds + "";
+  if (secs.length < 2) {
+    secs = '0' + secs;
+  }
+  return minutes + ':' + secs;
 };
 
 app.module.controller('MainController', app.MainController);
