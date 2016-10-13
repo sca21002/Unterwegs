@@ -87,12 +87,21 @@
 	                  <i class="material-icons md-14"
                         ng-show="track.icon === 'Gehen'">directions_walk
                       </i>
+	                  <i class="material-icons md-14"
+                        ng-show="track.icon === 'Auto'">directions_car
+                      </i>
+	                  <i class="material-icons md-14"
+                        ng-show="track.icon === 'Bus'">directions_bus
+                      </i>
+	                  <i class="material-icons md-14"
+                        ng-show="track.icon === 'Bahn'">directions_railway
+                      </i>
                     </div>
                     <div>{{track.len / 1000 | number:2}} km 
-                      <span ng-show="track.type != 'Laufen'">
+                      <span ng-show="track.travel_mode_id != 2">
                         ({{track.avg_speed | number:2}} km/h)
                       </span>
-                      <span ng-show="track.type == 'Laufen'">
+                      <span ng-show="track.travel_mode_id == 2">
                         ({{ctrl.velocity_in_min_per_km(track.avg_speed)}} min/km)
                       </span>
                     <div>{{track.start}}-{{track.end}} ({{track.duration}})</div>    
