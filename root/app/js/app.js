@@ -1,9 +1,7 @@
 goog.provide('app.MainController');
 
 goog.require('unterwegs');
-
 goog.require('ol');
-
 /**
  * This goog.require is needed because it provides 'ngeo-map' used in
  * the template.
@@ -12,6 +10,8 @@ goog.require('ol');
 goog.require('ngeo.mapDirective');
 /** @suppress {extraRequire} */
 goog.require('ngeo.modalDirective');
+/** @suppress {extraRequire} */
+goog.require('unterwegs.editattributeDirective');
 goog.require('ol.Map');
 goog.require('ol.View');
 goog.require('ol.layer.Tile');
@@ -22,12 +22,9 @@ goog.require('ol.style.Style');
 goog.require('ol.style.Fill');
 goog.require('ol.style.Stroke');
 goog.require('ol.style.Text');
-goog.require('ol.style.Circle');
-// goog.require('ol.style.Icon');
 goog.require('ol.format.GeoJSON');
 goog.require('ol.geom.Point');
 goog.require('unterwegs.Track');
-goog.require('unterwegs.TravelModes');
 
 /** @type {!angular.Module} **/
 app.module = angular.module('unterwegsApp', [unterwegs.module.name, 'ui.bootstrap']);
@@ -42,21 +39,18 @@ app.module.constant('mapboxURL', 'https://api.mapbox.com/styles/v1/' +
 
 /**
  * @param {unterwegs.Track} unterwegsTrack service
- * @param {unterwegs.TravelModes} unterwegsTravelModes service
  * @constructor
  * @ngInject
  */
-app.MainController = function(mapboxURL, unterwegsTrack, unterwegsTravelModes) {
-
+app.MainController = function(mapboxURL, unterwegsTrack) {
 
   this.unterwegsTrack = unterwegsTrack;
-  this.unterwegsTravelModes = unterwegsTravelModes;
             
   /**
    * @type {boolean}
    * @export
    */
-  this.modalShown = false;
+  this.modalEditAttributeShown = false;
 
   /**
    * @type {Object}
@@ -64,21 +58,11 @@ app.MainController = function(mapboxURL, unterwegsTrack, unterwegsTravelModes) {
    */
   this.track = {}; 
 
-  /**
-   * @type {Array.<string>}
-   * @export
-   */
-  this.travelModes = []; 
-
   this.center = [10.581, 49.682];
   this.zoom = 8;
   this.fetchedPage = 0;
 
   this.trackSource = new ol.source.Vector({
-    features: []
-  });
-
-  this.trackPointSource = new ol.source.Vector({
     features: []
   });
 
@@ -148,22 +132,6 @@ app.MainController = function(mapboxURL, unterwegsTrack, unterwegsTravelModes) {
       new ol.layer.Vector({
         source: this.trackSource,
         style: this.trackStyleFunction 
-      }),
-      new ol.layer.Vector({
-        source: this.trackPointSource,
-        style: new ol.style.Style({
-          image: new ol.style.Circle({
-              fill: new ol.style.Fill({
-                  color: 'rgba(255,255,255,0.4)'
-              }),
-              stroke: new ol.style.Stroke({
-                  width: 3,
-                  color: 'rgba(128,28,49,1)'
-              }),
-              radius: 2,
-              snapToPixel: false
-          })
-        })
       })
     ],  
     view: this.view
@@ -201,8 +169,6 @@ app.MainController = function(mapboxURL, unterwegsTrack, unterwegsTravelModes) {
 app.MainController.prototype.hover = function(ogc_fid) {
     var map = /** @type {ol.Map} */ (this.map);
     var trackSource = /** @type {ol.source.Vector} */ (this.trackSource);
-    var trackPointSource = 
-      /** @type {ol.source.Vector} */ (this.trackPointSource);
     var geojsonFormat = new ol.format.GeoJSON();
 
     this.unterwegsTrack.getTrack(ogc_fid).
@@ -218,27 +184,15 @@ app.MainController.prototype.hover = function(ogc_fid) {
         featureGeometry, mapSize,
         /** @type {olx.view.FitOptions} */ ({maxZoom: 16}));
     });
-//    this.unterwegsTrack.getTrackPoints(ogc_fid).
-//    then(function(geoJSON){
-//      var features = /** @type {ol.Features} */ 
-//          (geojsonFormat.readFeatures(geoJSON));
-//      trackPointSource.clear(true);        
-//      trackPointSource.addFeatures(features);
-//    });       
 };
 
 /**
- * @param {number} ogc_fid Feature identifier
+ * @param {Object} track track feature
  * @export
  */
-app.MainController.prototype.click = function(ogc_fid) {
-  this.modalShown = true;
-  this.track = this.tracks.find(function(track) {
-    return track.ogc_fid === ogc_fid;
-  });
-  this.unterwegsTravelModes.getList().then(function(travelModes){
-      this.travelModes = travelModes;
-  }.bind(this));     
+app.MainController.prototype.click = function(track) {
+  this.modalEditAttributeShown = true;
+  this.track = track;
 };
 
 
@@ -247,7 +201,6 @@ app.MainController.prototype.click = function(ogc_fid) {
  * @export
  */
 app.MainController.prototype.pageChanged = function() {
-    console.log('in page changed');
     if (this.page !== this.fetchedPage) {
       this.updateList();
     }
@@ -257,13 +210,9 @@ app.MainController.prototype.pageChanged = function() {
 /**
  * @export
  */
-app.MainController.prototype.updateTrack = function() {
-    this.modalShown = false;
-    console.log('in updateTrack');
-    this.unterwegsTrack.update(this.track).then(function(){
-        console.log('Update ok!');
-        this.updateList();
-    }.bind(this));
+app.MainController.prototype.attributeUpdated = function() {
+    this.modalEditAttributeShown = false;
+    this.updateList();
 };
 
 /**

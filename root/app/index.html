@@ -11,41 +11,9 @@
       </div>
     </header>
     <main>
-      <ngeo-modal ng-model="ctrl.modalShown">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="myModalLabel">{{ctrl.track.file}}</h4>
-        </div>
-        <div class="modal-body">
-          <form 
-            name = "track"
-            role = "form"
-            ng-submit = "ctrl.updateTrack()">
-            <div class = "form-group">
-              <label for="trackName">Name des Tracks</label>
-              <input
-                type = "text" 
-                class ="form-control"
-                name = "trackName"
-                ng-model="ctrl.track.name"
-                placeholder="Track name" />
-            </div>
-            <div class = "form-group">
-              <label for="trackType">Typ des Tracks</label>
-              <select 
-                class ="form-control"
-                name = "trackType"
-                ng-model="ctrl.track.travel_mode_id"
-                ng-options="mode.id as mode.name for mode in ctrl.travelModes"
-                placeholder="Typ des Tracks">
-              </select>  
-            </div>
-            <div class="form-group">
-              <button type="submit" class="btn btn-primary">Submit</button>
-            </div>
-          </form>
-        </div>
-      </ngeo-modal>    
+      <ngeo-modal ng-model="ctrl.modalEditAttributeShown" ngeo-modal-destroy-content-on-hide="true">
+        <unterwegs-editattribute track="ctrl.track" finish="ctrl.attributeUpdated()" />
+      </ngeo-modal>
       <div class="container-fluid">
         <div class="row">
           <div class="col-md-7">
@@ -75,7 +43,7 @@
               <tbody>
                 <tr ng-repeat="track in ctrl.tracks" 
                     ng-mouseenter="ctrl.hover(track.ogc_fid)"
-                    ng-click="ctrl.click(track.ogc_fid)">
+                    ng-click="ctrl.click(track)">
                   <td>
                     <div>{{track.name}} ({{track.file}})
 	                  <i class="material-icons md-14"
@@ -121,7 +89,8 @@
     <script src="../node_modules/ui-bootstrap-custom/ui-bootstrap-custom-tpls-2.1.4.min.js"></script> 
     <script src="../node_modules/angular-float-thead/angular-floatThead.js"></script> 
     <script src="../node_modules/bootstrap/dist/js/bootstrap.js"></script>
-    <script src="/@?main=js/app.js"></script>
-    <!-- <script src="../build/unterwegs.js"></script> -->   
+    <script src="/@?main=js/app.js"></script> 
+    <!-- <script src="../build/unterwegs.js"></script> --> 
+    <script src="default.js"></script>
   </body>
 </html>

@@ -33,6 +33,7 @@ _ngeo_folder = '' if ngeo_folder is UNDEFINED else ngeo_folder
 % endif
 % elif src_set == 'contribs_unterwegs':
     "src/**/*.js",
+    ".build/unterwegstemplatecache.js",
 % endif
     "node_modules/openlayers/src/**/*.js",
     "node_modules/openlayers/build/ol.ext/*.js",
