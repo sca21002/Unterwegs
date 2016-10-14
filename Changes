@@ -2,6 +2,8 @@ This file documents the revision history for Perl web application Unterwegs.
 
 {{$NEXT}}
 
+0.010     2016-10-14 23:17:24+02:00 Europe/Berlin
+
     - Editing of feature attributes is moved in
       a directive
 
