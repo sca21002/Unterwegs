@@ -29,7 +29,7 @@ unterwegs.module.directive(
  * @constructor
  * @ngInject
  * @ngdoc controller
- * @ngname GmfEditfeatureController
+ * @ngname UnterwegsEditattributeController
  */
 unterwegs.EditattributeController = function(
 	unterwegsTrack, unterwegsTravelModes) {

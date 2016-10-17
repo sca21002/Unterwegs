@@ -12,6 +12,8 @@ goog.require('ngeo.mapDirective');
 goog.require('ngeo.modalDirective');
 /** @suppress {extraRequire} */
 goog.require('unterwegs.editattributeDirective');
+/** @suppress {extraRequire} */
+goog.require('unterwegs.travelModeDirective');
 goog.require('ol.Map');
 goog.require('ol.View');
 goog.require('ol.layer.Tile');

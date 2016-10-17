@@ -11,8 +11,10 @@
       </div>
     </header>
     <main>
-      <ngeo-modal ng-model="ctrl.modalEditAttributeShown" ngeo-modal-destroy-content-on-hide="true">
-        <unterwegs-editattribute track="ctrl.track" finish="ctrl.attributeUpdated()" />
+      <ngeo-modal ng-model="ctrl.modalEditAttributeShown" 
+        ngeo-modal-destroy-content-on-hide="true">
+        <unterwegs-editattribute track="ctrl.track" 
+          finish="ctrl.attributeUpdated()" />
       </ngeo-modal>
       <div class="container-fluid">
         <div class="row">
@@ -28,12 +30,9 @@
                 <tr>
                   <td>
                     <div class="text-center">
-                      <ul uib-pagination 
-                        ng-model= "ctrl.page" 
-                        total-items= "ctrl.totalTracks"
-                        max-size = 6
-                        items-per-page = 5
-                        num-pages="ctrl.numPages"
+                      <ul uib-pagination ng-model= "ctrl.page" 
+                        total-items= "ctrl.totalTracks" max-size = 6 
+                        items-per-page = 5 num-pages="ctrl.numPages" 
                         ng-change="ctrl.pageChanged()" >
                       </ul>
                     </div>
@@ -46,24 +45,7 @@
                     ng-click="ctrl.click(track)">
                   <td>
                     <div>{{track.name}} ({{track.file}})
-	                  <i class="material-icons md-14"
-                        ng-show="track.icon === 'Laufen'">directions_run
-                      </i>
-	                  <i class="material-icons md-14"
-                        ng-show="track.icon === 'Rad'">directions_bike
-                      </i>
-	                  <i class="material-icons md-14"
-                        ng-show="track.icon === 'Gehen'">directions_walk
-                      </i>
-	                  <i class="material-icons md-14"
-                        ng-show="track.icon === 'Auto'">directions_car
-                      </i>
-	                  <i class="material-icons md-14"
-                        ng-show="track.icon === 'Bus'">directions_bus
-                      </i>
-	                  <i class="material-icons md-14"
-                        ng-show="track.icon === 'Bahn'">directions_railway
-                      </i>
+                    <unterwegs-travel-mode mode="{{track.icon}}" />
                     </div>
                     <div>{{track.len / 1000 | number:2}} km 
                       <span ng-show="track.travel_mode_id != 2">
