@@ -2,6 +2,8 @@ This file documents the revision history for Perl web application Unterwegs.
 
 {{$NEXT}}
 
+0.012     2016-10-22 16:57:13+02:00 Europe/Berlin
+
     - Add icons for xc skiing and skating
     - Import start time and length from hrm files too
 
