@@ -104,12 +104,15 @@ sub get_hrdata_as_href_of_time {
     );
 
     my $date = $strp_hrm_date->parse_datetime($data->{params}{Date});
+
+    # StartTime: Fractional seconds are always 0
     my $time = $strp_hrm_time->parse_datetime($data->{params}{StartTime});
     my $dt = $date->add(DateTime::Duration->new(
         hours   => $time->hour(),
         minutes => $time->minute(),
         seconds => $time->second(),
     ));
+
     my $one_second = DateTime::Duration->new(seconds => 1);
     
     my $hrdata;

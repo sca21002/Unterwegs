@@ -2,6 +2,9 @@ This file documents the revision history for Perl web application Unterwegs.
 
 {{$NEXT}}
 
+    - Add icons for xc skiing and skating
+    - Import start time and length from hrm files too
+
 0.011     2016-10-17 19:22:17+02:00 Europe/Berlin
 
     - Travel mode icons are moved into a directive

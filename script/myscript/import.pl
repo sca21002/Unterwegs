@@ -53,7 +53,7 @@ my $gpx_path = shift @ARGV or pod2usage( -verbose => 1 );
 
 $gpx_path = path($gpx_path);
 
-croak("Path to gpx files: $gpx_path doesn't exist") unless $gpx_path->exists;
+croak("Path to gpx files '$gpx_path' doesn't exist") unless $gpx_path->exists;
 
 my $gpx_extension = qr/\.gpx$/;
 
@@ -112,7 +112,7 @@ sub is_new {
     my $gpx_file = shift;
 
     my $basename = $gpx_file->basename('.gpx');
-    return $track_rs->search({src => $basename})->count < 1;
+    return $track_rs->search({file => $basename})->count < 1;
 }
 
 sub trk {
@@ -147,6 +147,8 @@ sub import_gpx_file {
 
     my $hrdata;
     my $hr_count;
+    my $start_hr;
+    my $duration_hr;
 
     my $gps_device = $gpx_file->basename =~ /^20/ 
         ? 'Garmin eTrex Vista HCx' : 'Polar RC3 GPS'; 
@@ -161,6 +163,14 @@ sub import_gpx_file {
     	locale    => 'de_DE',
     	time_zone => $time_zone,
 	);
+    
+    my $strp_hrm_date = DateTime::Format::Strptime->new(
+        pattern     => '%Y%m%d-%H:%M:%S.%1N',
+        locale      => 'de_DE',
+    	time_zone => 'Europe/Berlin',
+        on_error    => 'croak',
+    );
+
 
     unless( is_new($gpx_file) ) {
         INFO("\t\tis already imported!");
@@ -173,6 +183,16 @@ sub import_gpx_file {
     if ($hrm_file->is_file) {
         INFO("\tHeat rate file found: ", $hrm_file->basename);
         my $data = $hrm->read($hrm_file);
+        
+        # get start time
+        $start_hr   = $strp_hrm_date->parse_datetime(
+            $data->{params}{Date} . '-' . $data->{params}{StartTime}
+        );
+        $start_hr->set_time_zone('UTC');
+        
+        # get length
+        $duration_hr = $data->{params}{Length};
+
         $hrdata = $hrm->get_hrdata_as_href_of_time($data);
         $hr_count = scalar keys  %{$hrdata};
     }
@@ -184,6 +204,8 @@ sub import_gpx_file {
         $track->{file} = $gpx_file->basename('.gpx');
         $track->{src} = $gps_device;
         $track->{tour_id} = $tour_id;
+        $track->{start_hr} = $start_hr if $start_hr;
+        $track->{duration_hr} = $duration_hr if $duration_hr;
 
         foreach my $track_point ( @{ $track->{track_points} } ) {
 

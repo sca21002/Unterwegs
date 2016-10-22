@@ -213,7 +213,9 @@ CREATE TABLE tracks (
     duration interval hour to second(0),
     len bigint,
     avg_speed double precision,
-    travel_mode_id integer
+    travel_mode_id integer,
+    start_hr timestamp with time zone,
+    duration_hr interval hour to second(1)
 );
 
 

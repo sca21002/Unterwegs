@@ -60,6 +60,8 @@ app.MainController = function(mapboxURL, unterwegsTrack) {
    */
   this.track = {}; 
 
+//  this.track_fid;
+
   this.center = [10.581, 49.682];
   this.zoom = 8;
   this.fetchedPage = 0;
@@ -67,6 +69,10 @@ app.MainController = function(mapboxURL, unterwegsTrack) {
   this.trackSource = new ol.source.Vector({
     features: []
   });
+
+  this.trackPointSource = new ol.source.Vector({
+    features: []
+  });  
 
   this.view = new ol.View({
     center: ol.proj.transform(
@@ -134,7 +140,23 @@ app.MainController = function(mapboxURL, unterwegsTrack) {
       new ol.layer.Vector({
         source: this.trackSource,
         style: this.trackStyleFunction 
-      })
+      }),
+      new ol.layer.Vector({
+        source: this.trackPointSource,
+        style: new ol.style.Style({
+          image: new ol.style.Circle({
+            fill: new ol.style.Fill({
+                color: 'rgba(255,255,255,0.4)'
+            }),
+            stroke: new ol.style.Stroke({
+                width: 3,
+                color: 'rgba(128,28,49,1)'
+            }),
+            radius: 2,
+            snapToPixel: false
+          })
+        })
+	  })
     ],  
     view: this.view
   });
@@ -160,6 +182,24 @@ app.MainController = function(mapboxURL, unterwegsTrack) {
     }.bind(this));
   }; 
 
+//  ol.events.listen(this.map.getView(),
+//    ol.Object.getChangeEventType(ol.View.Property.RESOLUTION),
+//    function() {
+//      console.log('in change:resolution');
+//      if (this.trackPointSource.getFeatures().length === 0) {
+//        var trackPointSource = 
+//            /** @type {ol.source.Vector} */ (this.trackPointSource);
+//        var geojsonFormat = new ol.format.GeoJSON();
+//        this.unterwegsTrack.getTrackPoints(this.track_fid).
+//        then(function(geoJSON){
+//          var features = /** @type {ol.Features} */ 
+//              (geojsonFormat.readFeatures(geoJSON));
+//          trackPointSource.addFeatures(features);
+//        });    
+//      }
+//    }, this
+//  );
+
   this.updateList();
 };
 
@@ -169,23 +209,34 @@ app.MainController = function(mapboxURL, unterwegsTrack) {
  * @export
  */
 app.MainController.prototype.hover = function(ogc_fid) {
-    var map = /** @type {ol.Map} */ (this.map);
-    var trackSource = /** @type {ol.source.Vector} */ (this.trackSource);
-    var geojsonFormat = new ol.format.GeoJSON();
+  this.track_fid = ogc_fid;
+  var map = /** @type {ol.Map} */ (this.map);
+  var trackSource = /** @type {ol.source.Vector} */ (this.trackSource);
+  var trackPointSource = /** @type {ol.source.Vector} */ (this.trackPointSource);
+  var geojsonFormat = new ol.format.GeoJSON();
 
-    this.unterwegsTrack.getTrack(ogc_fid).
+  this.unterwegsTrack.getTrack(ogc_fid).
+  then(function(geoJSON){
+    var feature = /** @type {ol.Feature} */ 
+        (geojsonFormat.readFeature(geoJSON));
+    trackSource.clear(true);        
+    trackSource.addFeature(feature);
+    var featureGeometry = /** @type {ol.geom.SimpleGeometry} */
+        (feature.getGeometry());
+    var mapSize = /** @type {ol.Size} */ (map.getSize());
+    map.getView().fit(
+      featureGeometry, mapSize,
+      /** @type {olx.view.FitOptions} */ ({maxZoom: 16}));
+  });
+  if (map.getView() > 15) {
+    this.unterwegsTrack.getTrackPoints(ogc_fid).
     then(function(geoJSON){
-      var feature = /** @type {ol.Feature} */ 
-          (geojsonFormat.readFeature(geoJSON));
-      trackSource.clear(true);        
-      trackSource.addFeature(feature);
-      var featureGeometry = /** @type {ol.geom.SimpleGeometry} */
-          (feature.getGeometry());
-      var mapSize = /** @type {ol.Size} */ (map.getSize());
-      map.getView().fit(
-        featureGeometry, mapSize,
-        /** @type {olx.view.FitOptions} */ ({maxZoom: 16}));
-    });
+      var features = /** @type {ol.Features} */ 
+          (geojsonFormat.readFeatures(geoJSON));
+      trackPointSource.clear(true);        
+      trackPointSource.addFeatures(features);
+    });    
+  }
 };
 
 /**

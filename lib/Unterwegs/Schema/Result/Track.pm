@@ -166,6 +166,17 @@ __PACKAGE__->table("tracks");
   is_foreign_key: 1
   is_nullable: 1
 
+=head2 start_hr
+
+  data_type: 'timestamp with time zone'
+  is_nullable: 1
+
+=head2 duration_hr
+
+  data_type: 'interval'
+  is_nullable: 1
+  size: 1
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -266,6 +277,10 @@ __PACKAGE__->add_columns(
   { data_type => "double precision", is_nullable => 1 },
   "travel_mode_id",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 1 },
+  "start_hr",
+  { data_type => "timestamp with time zone", is_nullable => 1 },
+  "duration_hr",
+  { data_type => "interval", is_nullable => 1, size => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -338,8 +353,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07045 @ 2016-10-11 09:29:51
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:4hqosAdo605b4FkHCmpVGA
+# Created by DBIx::Class::Schema::Loader v0.07045 @ 2016-10-21 19:40:46
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:NGllZ/1P+TBuTcifzNldYA
 
 use DateTime::Format::Pg;
 use Geo::JSON;

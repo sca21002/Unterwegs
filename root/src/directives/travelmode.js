@@ -35,6 +35,12 @@ unterwegs.TravelModeController = function() {
    */
   this.icon;
 
+  /**
+   * @type {string}
+   * @export
+   */
+  this.cssClass = 'material-icons md-14';
+
   var mode = this.mode;  
     if (mode === 'Laufen') {
       this.icon = 'directions_run';
@@ -50,6 +56,10 @@ unterwegs.TravelModeController = function() {
       this.icon = 'directions_railway';
     } else if (mode === 'Tram') {
       this.icon = 'tram';
+    } else if (mode === 'Schlittschuhlaufen') {
+      this.cssClass = 'glyphx glyphx-skating';
+    } else if (mode === 'Langlaufen') {
+      this.cssClass = 'glyphx glyphx-xc-ski';
     } else {
       console.log('Unknown mode: ', mode);
     }
