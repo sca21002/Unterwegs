@@ -11,17 +11,27 @@
       </div>
     </header>
     <main>
+      <div>modalEditTrackPointShown: {{ctrl.modalEditTrackPointShown}}</div>
       <ngeo-modal ng-model="ctrl.modalEditAttributeShown" 
         ngeo-modal-destroy-content-on-hide="true">
         <unterwegs-editattribute track="ctrl.track" 
           finish="ctrl.attributeUpdated()" />
       </ngeo-modal>
+      <ngeo-modal ng-model="ctrl.modalEditTrackPointShown"
+        ngeo-modal-destroy-content-on-hide="true">
+        <unterwegs-edittrackpoint trackpoint="ctrl.trackPoint"
+          finish="ctrl.trackpointDeleted()" />  
+      </ngeo-modal>    
       <div class="container-fluid">
         <div class="row">
           <div class="col-md-7">
             <div class="map-container">
               <div id="map" ngeo-map="ctrl.map"></div>
             </div>
+            <i class="material-icons md-14"
+               ng-click="ctrl.edit()">    
+              mode_edit
+            </i>  
           </div>
           <div class="col-md-5">
             <table class="table table-condensed table-hover">
@@ -54,7 +64,8 @@
                       <span ng-show="track.travel_mode_id == 2">
                         ({{ctrl.velocity_in_min_per_km(track.avg_speed)}} min/km)
                       </span>
-                    <div>{{track.start}}-{{track.end}} ({{track.duration}})</div>    
+                    <div>{{track.start}}-{{track.end}} ({{track.duration}})  
+                    </div>
                   </td>    
                 </tr>     
               </tbody>    

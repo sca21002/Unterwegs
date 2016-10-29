@@ -6,7 +6,6 @@ sub encode_json {
     my($self, $c) = @_;
 
     my $ft = $c->stash->{feature};
-    $c->log->debug($ft);
     return $ft->to_json;
 }
 

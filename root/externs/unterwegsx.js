@@ -11,7 +11,7 @@
 var unterwegsx;
 
 /**
- * track
+ * Track
  * @typedef {{
  *     ogc_fid: (number)
  * }}
@@ -23,3 +23,17 @@ unterwegsx.Track;
  * @type {number}
  */
 unterwegsx.Track.prototype.ogc_fid;
+
+/**
+ * TrackPoint
+ * @typedef {{
+ *     ogc_fid: (number)
+ * }}
+ */
+unterwegsx.TrackPoint;
+
+/**
+ * The identifier for the track point
+ * @type {number}
+ */
+unterwegsx.TrackPoint.prototype.ogc_fid;

@@ -109,8 +109,6 @@ sub trackpoints : Chained('track') PathPart('trackpoints') Args(0) {
     my $tracks_rs = $c->stash->{tracks};
     my $ogc_fid   = $c->stash->{ogc_fid};
 
-    $c->log->debug('Bin in trackpoints');
-
     my $track_points_rs = $tracks_rs->find($ogc_fid)->search_related(
         'track_points',
         {},
@@ -124,12 +122,8 @@ sub trackpoints : Chained('track') PathPart('trackpoints') Args(0) {
         },
     );
 
-    $c->log->debug('Count: ', $track_points_rs->count);
-
     my $fcol = $track_points_rs->as_feature_collection;
 
-    $c->log->debug(Dumper($fcol));
-    
     $c->stash(
         feature => $fcol,
         current_view => 'GeoJSON'
@@ -149,8 +143,6 @@ sub update : Chained('track') PathPart('update') Args(0) {
     my %columns;
     @columns{qw(cmt travel_mode_id tour_id desc name)} 
         = @{$data}{qw(cmt travel_mode_id tour_id desc name)};
-
-    $c->log->debug(Dumper(\%columns));
 
     $track->update(\%columns);
     

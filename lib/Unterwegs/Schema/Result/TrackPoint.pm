@@ -51,7 +51,7 @@ __PACKAGE__->table("track_points");
   is_nullable: 1
   size: '58880,16'
 
-=head2 track_fid
+=head2 track_id
 
   data_type: 'integer'
   is_foreign_key: 1
@@ -217,7 +217,7 @@ __PACKAGE__->add_columns(
   },
   "wkb_geometry",
   { data_type => "geometry", is_nullable => 1, size => "58880,16" },
-  "track_fid",
+  "track_id",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 1 },
   "track_seg_id",
   { data_type => "integer", is_nullable => 1 },
@@ -341,7 +341,7 @@ __PACKAGE__->set_primary_key("ogc_fid");
 
 =head1 RELATIONS
 
-=head2 track_fid
+=head2 track
 
 Type: belongs_to
 
@@ -350,9 +350,9 @@ Related object: L<Unterwegs::Schema::Result::Track>
 =cut
 
 __PACKAGE__->belongs_to(
-  "track_fid",
+  "track",
   "Unterwegs::Schema::Result::Track",
-  { ogc_fid => "track_fid" },
+  { ogc_fid => "track_id" },
   {
     is_deferrable => 0,
     join_type     => "LEFT",
@@ -362,8 +362,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07042 @ 2014-10-09 16:09:35
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:lb774qsOpoyhrZKkJUFy7w
+# Created by DBIx::Class::Schema::Loader v0.07045 @ 2016-10-29 10:16:16
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:FOQTxDZ1OlfYtbNjsE9oZw
 
 use Geo::JSON;
 use Geo::JSON::Feature;

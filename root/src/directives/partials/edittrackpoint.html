@@ -1,0 +1,60 @@
+<div class="modal-header">
+  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  <h4 class="modal-title" id="myModalLabel">Trackpoint</h4>
+</div>
+<div class="modal-body">
+  <table class="table table-condensed">
+    <thead>
+      <tr>
+        <th>Feld</th>
+        <th>Wert</th>      
+      </tr>
+    </thead>
+    <tbody>
+      <tr>  
+        <td>ogc_fid</td>
+        <td>{{etCtrl.trackpoint.get('ogc_fid')}}</td>   
+      </tr>
+      <tr>     
+        <td>Puls</td>
+        <td>{{etCtrl.trackpoint.get('hr')}}</td>        
+      </tr>
+      <tr>     
+        <td>Höhe</td>
+        <td>{{etCtrl.trackpoint.get('ele')}}</td>        
+      </tr>
+      <tr>     
+        <td>Satelit</td>
+        <td>{{etCtrl.trackpoint.get('sat')}}</td>        
+      </tr>
+      <tr>     
+        <td>Fix</td>
+        <td>{{etCtrl.trackpoint.get('fix')}}</td>        
+      </tr>
+      <tr>     
+        <td>Geschwindigkeit</td>
+        <td>{{etCtrl.trackpoint.get('speed')}}</td>        
+      </tr>
+      <tr>     
+        <td>track_id</td>
+        <td>{{etCtrl.trackpoint.get('track_id')}}</td>        
+      </tr>
+      <tr>     
+        <td>track_seg_id</td>
+        <td>{{etCtrl.trackpoint.get('track_seg_id')}}</td>        
+      </tr>
+      <tr>     
+        <td>track_seg_point_id</td>
+        <td>{{etCtrl.trackpoint.get('track_seg_point_id')}}</td>        
+      </tr>
+      <tr>     
+        <td>Zeit</td>
+        <td>{{etCtrl.trackpoint.get('time')}}</td>        
+      </tr>
+    </tbody>
+  </table>    
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-default" data-dismiss="modal">Schließen</button>
+  <button type="button" class="btn btn-danger" ng-click="etCtrl.deleteTrackpoint()">Löschen</button>
+</div>

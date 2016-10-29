@@ -328,7 +328,7 @@ Related object: L<Unterwegs::Schema::Result::TrackPoint>
 __PACKAGE__->has_many(
   "track_points",
   "Unterwegs::Schema::Result::TrackPoint",
-  { "foreign.track_fid" => "self.ogc_fid" },
+  { "foreign.track_id" => "self.ogc_fid" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
@@ -353,8 +353,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07045 @ 2016-10-21 19:40:46
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:NGllZ/1P+TBuTcifzNldYA
+# Created by DBIx::Class::Schema::Loader v0.07045 @ 2016-10-29 10:16:16
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:0rRzAMRHnKAHg+iRxkYY/A
 
 use DateTime::Format::Pg;
 use Geo::JSON;

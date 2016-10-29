@@ -13,6 +13,8 @@ goog.require('ngeo.modalDirective');
 /** @suppress {extraRequire} */
 goog.require('unterwegs.editattributeDirective');
 /** @suppress {extraRequire} */
+goog.require('unterwegs.edittrackpointDirective');
+/** @suppress {extraRequire} */
 goog.require('unterwegs.travelModeDirective');
 goog.require('ol.Map');
 goog.require('ol.View');
@@ -44,7 +46,7 @@ app.module.constant('mapboxURL', 'https://api.mapbox.com/styles/v1/' +
  * @constructor
  * @ngInject
  */
-app.MainController = function(mapboxURL, unterwegsTrack) {
+app.MainController = function($scope, mapboxURL, unterwegsTrack) {
 
   this.unterwegsTrack = unterwegsTrack;
             
@@ -55,12 +57,24 @@ app.MainController = function(mapboxURL, unterwegsTrack) {
   this.modalEditAttributeShown = false;
 
   /**
+   * @type {boolean}
+   * @export
+   */
+  this.modalEditTrackPointShown = false;
+
+  /**
    * @type {Object}
    * @export
    */
   this.track = {}; 
 
-//  this.track_fid;
+  /**
+   * @type {Object}
+   * @export
+   */
+  this.trackPoint = {}; 
+
+  this.trackFidSelected;
 
   this.center = [10.581, 49.682];
   this.zoom = 8;
@@ -142,17 +156,15 @@ app.MainController = function(mapboxURL, unterwegsTrack) {
         style: this.trackStyleFunction 
       }),
       new ol.layer.Vector({
+        name: 'trackPoints',
         source: this.trackPointSource,
         style: new ol.style.Style({
           image: new ol.style.Circle({
-            fill: new ol.style.Fill({
-                color: 'rgba(255,255,255,0.4)'
-            }),
             stroke: new ol.style.Stroke({
-                width: 3,
-                color: 'rgba(128,28,49,1)'
+                width: 1,
+                color: 'rgba(255,51,51,1)'
             }),
-            radius: 2,
+            radius: 3,
             snapToPixel: false
           })
         })
@@ -182,23 +194,27 @@ app.MainController = function(mapboxURL, unterwegsTrack) {
     }.bind(this));
   }; 
 
-//  ol.events.listen(this.map.getView(),
-//    ol.Object.getChangeEventType(ol.View.Property.RESOLUTION),
-//    function() {
-//      console.log('in change:resolution');
-//      if (this.trackPointSource.getFeatures().length === 0) {
-//        var trackPointSource = 
-//            /** @type {ol.source.Vector} */ (this.trackPointSource);
-//        var geojsonFormat = new ol.format.GeoJSON();
-//        this.unterwegsTrack.getTrackPoints(this.track_fid).
-//        then(function(geoJSON){
-//          var features = /** @type {ol.Features} */ 
-//              (geojsonFormat.readFeatures(geoJSON));
-//          trackPointSource.addFeatures(features);
-//        });    
-//      }
-//    }, this
-//  );
+  var vm = this;
+  ol.events.listen(this.map, ol.MapBrowserEvent.EventType.CLICK,
+    function(event) {
+    // this is target (this.map)
+    var hit = this.map.forEachFeatureAtPixel(event.pixel, function(feature) {
+      // vm.unselectPreviousFeatures();
+      // feature.setStyle(vm.viewpointStyleSelectedFn(feature));
+      //vm.selectedFeatures.push(feature);
+      console.log('Point clixked: ',this); 
+      this.modalEditTrackPointShown = true;
+      // modalEditTrackPointShown = true;
+      this.trackPoint = feature;
+      $scope.$apply();
+      return true;
+    }, this, function(layer) {
+        return layer.get('name') === 'trackPoints';
+    });
+    if (!hit) { 
+      //  vm.unselectPreviousFeatures(); 
+    }
+  },this); 
 
   this.updateList();
 };
@@ -209,12 +225,10 @@ app.MainController = function(mapboxURL, unterwegsTrack) {
  * @export
  */
 app.MainController.prototype.hover = function(ogc_fid) {
-  this.track_fid = ogc_fid;
+  this.trackFidSelected = ogc_fid;
   var map = /** @type {ol.Map} */ (this.map);
   var trackSource = /** @type {ol.source.Vector} */ (this.trackSource);
-  var trackPointSource = /** @type {ol.source.Vector} */ (this.trackPointSource);
   var geojsonFormat = new ol.format.GeoJSON();
-
   this.unterwegsTrack.getTrack(ogc_fid).
   then(function(geoJSON){
     var feature = /** @type {ol.Feature} */ 
@@ -228,15 +242,6 @@ app.MainController.prototype.hover = function(ogc_fid) {
       featureGeometry, mapSize,
       /** @type {olx.view.FitOptions} */ ({maxZoom: 16}));
   });
-  if (map.getView() > 15) {
-    this.unterwegsTrack.getTrackPoints(ogc_fid).
-    then(function(geoJSON){
-      var features = /** @type {ol.Features} */ 
-          (geojsonFormat.readFeatures(geoJSON));
-      trackPointSource.clear(true);        
-      trackPointSource.addFeatures(features);
-    });    
-  }
 };
 
 /**
@@ -266,6 +271,36 @@ app.MainController.prototype.pageChanged = function() {
 app.MainController.prototype.attributeUpdated = function() {
     this.modalEditAttributeShown = false;
     this.updateList();
+};
+
+/**
+/**
+ * @export
+ */
+app.MainController.prototype.trackpointDeleted = function() {
+    this.modalEditTrackPointShown = false;
+    console.log("Trackpoint deleted");
+    this.updateList();
+};
+
+/**
+ * @param {number} ogc_fid Feature identifier
+ * @export
+ */
+app.MainController.prototype.edit = function() {
+  console.log('Bin in edit');
+  var trackPointSource = /** @type {ol.source.Vector} */ (this.trackPointSource);
+  var geojsonFormat = new ol.format.GeoJSON();
+  if (this.trackFidSelected) {
+    var ogc_fid = this.trackFidSelected;  
+    this.unterwegsTrack.getTrackPoints(ogc_fid).
+    then(function(geoJSON){
+      var features = /** @type {ol.Features} */ 
+          (geojsonFormat.readFeatures(geoJSON));
+      trackPointSource.clear(true);        
+      trackPointSource.addFeatures(features);
+    });    
+  }
 };
 
 /**

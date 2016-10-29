@@ -26,8 +26,6 @@ unterwegs.module.directive(
  * @ngname UnterwegsTravelModeController
  */
 unterwegs.TravelModeController = function() {
-  console.log('Bin in unterwegs.TravelModeController');  
-
   
   /**
    * @type {string}

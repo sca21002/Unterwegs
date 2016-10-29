@@ -17,7 +17,7 @@ SET search_path = public, pg_catalog;
 
 ALTER TABLE ONLY public.tracks DROP CONSTRAINT tracks_travel_mode_id_fkey;
 ALTER TABLE ONLY public.tracks DROP CONSTRAINT tracks_tour_id_fkey;
-ALTER TABLE ONLY public.track_points DROP CONSTRAINT track_points_track_fid_fkey;
+ALTER TABLE ONLY public.track_points DROP CONSTRAINT track_points_track_id_fkey;
 DROP INDEX public.tracks_geom_idx;
 DROP INDEX public.track_points_geom_idx;
 ALTER TABLE ONLY public.travel_modes DROP CONSTRAINT travel_mode_pkey;
@@ -133,7 +133,7 @@ ALTER SEQUENCE tours_tour_id_seq OWNED BY tours.tour_id;
 CREATE TABLE track_points (
     ogc_fid integer NOT NULL,
     wkb_geometry geometry(Point,4326),
-    track_fid integer,
+    track_id integer,
     track_seg_id integer,
     track_seg_point_id integer,
     ele double precision,
@@ -367,11 +367,11 @@ CREATE INDEX tracks_geom_idx ON tracks USING gist (wkb_geometry);
 
 
 --
--- Name: track_points_track_fid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: unterwegs
+-- Name: track_points_track_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: unterwegs
 --
 
 ALTER TABLE ONLY track_points
-    ADD CONSTRAINT track_points_track_fid_fkey FOREIGN KEY (track_fid) REFERENCES tracks(ogc_fid);
+    ADD CONSTRAINT track_points_track_id_fkey FOREIGN KEY (track_id) REFERENCES tracks(ogc_fid);
 
 
 --

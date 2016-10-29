@@ -8,4 +8,3 @@ unterwegsUrlElements.push('src', 'directives', 'partials');
  * @type {string}
  */
 unterwegs.baseTemplateUrl = window.location.origin + '/' + unterwegsUrlElements.join('/');
-console.log('Ich bin in DEFAULT!!!!!');
