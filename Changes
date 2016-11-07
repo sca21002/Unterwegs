@@ -2,6 +2,8 @@ This file documents the revision history for Perl web application Unterwegs.
 
 {{$NEXT}}
 
+    - Add profiles for heartrate, elevation and speed
+
 0.013     2016-10-29 13:45:50+02:00 Europe/Berlin
 
     - Add delete track points

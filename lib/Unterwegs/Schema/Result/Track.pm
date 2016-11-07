@@ -353,8 +353,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07045 @ 2016-10-29 10:16:16
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:0rRzAMRHnKAHg+iRxkYY/A
+# Created by DBIx::Class::Schema::Loader v0.07045 @ 2016-10-31 22:29:51
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:E7N0DPCs6ZKR9cAo+sI/aA
 
 use DateTime::Format::Pg;
 use Geo::JSON;

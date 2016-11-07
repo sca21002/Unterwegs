@@ -205,6 +205,11 @@ __PACKAGE__->table("track_points");
   data_type: 'integer'
   is_nullable: 1
 
+=head2 dist
+
+  data_type: 'bigint'
+  is_nullable: 1
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -325,6 +330,8 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_nullable => 1 },
   "speed",
   { data_type => "integer", is_nullable => 1 },
+  "dist",
+  { data_type => "bigint", is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -362,8 +369,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07045 @ 2016-10-29 10:16:16
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:FOQTxDZ1OlfYtbNjsE9oZw
+# Created by DBIx::Class::Schema::Loader v0.07045 @ 2016-10-31 14:36:58
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ydoqQSCy0M9o3sb6oZrGOg
 
 use Geo::JSON;
 use Geo::JSON::Feature;

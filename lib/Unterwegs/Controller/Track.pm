@@ -119,6 +119,7 @@ sub trackpoints : Chained('track') PathPart('trackpoints') Args(0) {
             '+as'     => [ 
                 'geojson_geometry' 
             ],      
+            order_by => 'time',
         },
     );
 

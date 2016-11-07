@@ -11,6 +11,8 @@ goog.require('ngeo.mapDirective');
 /** @suppress {extraRequire} */
 goog.require('ngeo.modalDirective');
 /** @suppress {extraRequire} */
+goog.require('ngeo.profileDirective');
+/** @suppress {extraRequire} */
 goog.require('unterwegs.editattributeDirective');
 /** @suppress {extraRequire} */
 goog.require('unterwegs.edittrackpointDirective');
@@ -48,6 +50,12 @@ app.module.constant('mapboxURL', 'https://api.mapbox.com/styles/v1/' +
  */
 app.MainController = function($scope, mapboxURL, unterwegsTrack) {
 
+  /**
+   * @type {angular.Scope}
+   * @private
+   */
+  this.scope_ = $scope;
+
   this.unterwegsTrack = unterwegsTrack;
             
   /**
@@ -75,6 +83,44 @@ app.MainController = function($scope, mapboxURL, unterwegsTrack) {
   this.trackPoint = {}; 
 
   this.trackFidSelected;
+
+  /**
+   * @type {boolean}
+   * @export
+   */
+  this.detailMode = false;
+
+  /**
+   * @type {boolean}
+   * @export
+   */
+  this.loading = false;
+
+  /**
+   * @type {Object|undefined}
+   * @export
+   */
+  this.profileData = undefined;
+
+  var vectorLayer = new ol.layer.Vector({
+    source: new ol.source.Vector(),
+    style: new ol.style.Style({
+      image: new ol.style.Circle({
+        stroke: new ol.style.Stroke({
+            width: 2,
+            color: '#f00'
+        }),
+        fill: new ol.style.Fill({
+          color: "rgba(255,51,51,0.5)"
+        }),
+        radius: 5,
+        snapToPixel: false
+      })
+    })
+  });
+
+  this.snappedPoint_ = new ol.Feature();
+  vectorLayer.getSource().addFeature(this.snappedPoint_);
 
   this.center = [10.581, 49.682];
   this.zoom = 8;
@@ -168,10 +214,15 @@ app.MainController = function($scope, mapboxURL, unterwegsTrack) {
             snapToPixel: false
           })
         })
-	  })
+	  }),
     ],  
     view: this.view
   });
+
+  // Use vectorLayer.setMap(map) rather than map.addLayer(vectorLayer). This
+  // makes the vector layer "unmanaged", meaning that it is always on top.
+  vectorLayer.setMap(this.map);
+
 
   this.updateList = function() {
     unterwegsTrack.getList(this.page).then(function(data){
@@ -194,7 +245,6 @@ app.MainController = function($scope, mapboxURL, unterwegsTrack) {
     }.bind(this));
   }; 
 
-  var vm = this;
   ol.events.listen(this.map, ol.MapBrowserEvent.EventType.CLICK,
     function(event) {
     // this is target (this.map)
@@ -202,7 +252,6 @@ app.MainController = function($scope, mapboxURL, unterwegsTrack) {
       // vm.unselectPreviousFeatures();
       // feature.setStyle(vm.viewpointStyleSelectedFn(feature));
       //vm.selectedFeatures.push(feature);
-      console.log('Point clixked: ',this); 
       this.modalEditTrackPointShown = true;
       // modalEditTrackPointShown = true;
       this.trackPoint = feature;
@@ -216,6 +265,26 @@ app.MainController = function($scope, mapboxURL, unterwegsTrack) {
     }
   },this); 
 
+  /**
+   * @type {Object}
+   * @export
+   */
+  this.point = null;
+
+  /**
+   * @type {number|undefined}
+   * @export
+   */
+  this.profileHighlight = undefined;
+
+  /**
+   * @type {Object}
+   * @export
+   */
+  this.profileOptions = {
+    linesConfiguration: {}
+  };
+
   this.updateList();
 };
 
@@ -225,6 +294,7 @@ app.MainController = function($scope, mapboxURL, unterwegsTrack) {
  * @export
  */
 app.MainController.prototype.hover = function(ogc_fid) {
+  if (this.detailMode) { return null; }
   this.trackFidSelected = ogc_fid;
   var map = /** @type {ol.Map} */ (this.map);
   var trackSource = /** @type {ol.source.Vector} */ (this.trackSource);
@@ -242,6 +312,8 @@ app.MainController.prototype.hover = function(ogc_fid) {
       featureGeometry, mapSize,
       /** @type {olx.view.FitOptions} */ ({maxZoom: 16}));
   });
+
+
 };
 
 /**
@@ -259,7 +331,7 @@ app.MainController.prototype.click = function(track) {
  * @export
  */
 app.MainController.prototype.pageChanged = function() {
-    if (this.page !== this.fetchedPage) {
+    if (this.page !== this.fetchedPage && !this.detailMode ) {
       this.updateList();
     }
 };
@@ -290,20 +362,155 @@ app.MainController.prototype.trackpointDeleted = function() {
 app.MainController.prototype.edit = function() {
   console.log('Bin in edit');
   var trackPointSource = /** @type {ol.source.Vector} */ (this.trackPointSource);
-  var geojsonFormat = new ol.format.GeoJSON();
-  if (this.trackFidSelected) {
-    var ogc_fid = this.trackFidSelected;  
-    this.unterwegsTrack.getTrackPoints(ogc_fid).
-    then(function(geoJSON){
-      var features = /** @type {ol.Features} */ 
-          (geojsonFormat.readFeatures(geoJSON));
-      trackPointSource.clear(true);        
-      trackPointSource.addFeatures(features);
-    });    
-  }
+  if (this.detailMode === 'edit') {
+    trackPointSource.clear(true); 
+    this.detailMode = null;
+  } else {
+    this.loading = true;
+    var geojsonFormat = new ol.format.GeoJSON();
+    if (this.trackFidSelected) {
+      var ogc_fid = this.trackFidSelected;  
+      this.unterwegsTrack.getTrackPoints(ogc_fid).
+      then(function(geoJSON){
+        var features = /** @type {ol.Features} */ 
+            (geojsonFormat.readFeatures(geoJSON));
+        trackPointSource.clear(true);        
+        trackPointSource.addFeatures(features);
+        this.loading = false;
+      }.bind(this));    
+      this.detailMode === 'edit';
+      this.map.on('pointermove', function(evt) {
+        if (evt.dragging) {
+          return;
+        }
+        console.log('In pointermove');
+        var coordinate = this.map.getEventCoordinate(evt.originalEvent);
+        this.snapToGeometry(
+           coordinate, this.trackSource.getFeatures()[0].getGeometry()
+        );
+      }.bind(this));
+    }
+  }    
 };
 
 /**
+ * @param {number} ogc_fid Feature identifier
+ * @export
+ */
+app.MainController.prototype.profile = function(type) {
+  console.log('Bin in profile: ', type);
+  if (this.detailMode) {
+    this.detailMode = null;
+    this.profileData = null;
+  } else {
+    this.loading = true;
+    if (this.trackFidSelected) {
+      var ogc_fid = this.trackFidSelected;  
+      this.unterwegsTrack.getTrackPoints(ogc_fid).
+      then(function(geoJSON){
+        var data = geoJSON.features;  
+        if (type === 'elevation') {
+          data = data.filter( function(element) {
+            if (element['properties']['ele'] < 10) {
+              return false;    
+            }  else {
+              return true;
+            }   
+          });       
+        }
+        this.profileData = data;
+        this.loading = false;
+      }.bind(this));
+      this.detailMode = type;      
+
+      /**
+       * @param {Object} item
+       * @return {number}
+       */
+      var distanceExtractor = function(item) {
+            var properties = item['properties']; 
+            var dist = properties['dist'];
+              return dist;
+      };
+    
+
+      /**
+       * Factory for creating simple getter functions for extractors.
+       * If the value is in a child property, the opt_childKey must be defined.
+       * The type parameter is used by closure to type the returned function.
+       * @param {T} type An object of the expected result type.
+       * @param {string} key Key used for retrieving the value.
+       * @param {string=} opt_childKey Key of a child object.
+       * @template T
+       * @return {function(Object): T} Getter function.
+       */
+      var typedFunctionsFactory = function(type, key) {
+        return (
+            /**
+             * @param {Object} item
+             * @return {T}
+             * @template T
+             */
+            function(item) {
+              return item['properties'][key];
+            });
+      };
+
+      var types = {
+        number: 1,
+        string: ''
+      };
+
+      var profileType = 'speed';
+
+      var keyMap = {
+        heartrate: 'hr',
+        elevation: 'ele',
+        speed: 'speed'
+      };        
+
+      console.log('Type: ', type);
+      console.log('Type: ', types.number);
+
+      var linesConfiguration = {
+        'line1': {
+          style: {},
+          zExtractor: typedFunctionsFactory(types.number, keyMap[type])
+        }
+      };
+    
+      /**
+       * @param {Object} point Point.
+       */
+      var hoverCallback = function(point) {
+        // An item in the list of points given to the profile.
+        this.point = point;
+        this.snappedPoint_.setGeometry(new ol.geom.Point(point['geometry']['coordinates']));
+      }.bind(this);
+    
+      var outCallback = function() {
+        this.point = null;
+        this.snappedPoint_.setGeometry(null);
+      }.bind(this);
+    
+      /**
+       * @type {Object}
+       * @export
+       */
+      this.profileOptions = {
+        distanceExtractor: distanceExtractor,
+        linesConfiguration: linesConfiguration,
+    //    poiExtractor: poiExtractor,
+        hoverCallback: hoverCallback,
+        outCallback: outCallback
+      };
+
+    }    
+  }     
+}
+  
+  
+  /**
  * @param {number} speed Velocity in km per hour
  * @export
  */
@@ -316,6 +523,26 @@ app.MainController.prototype.velocity_in_min_per_km = function(speed) {
     secs = '0' + secs;
   }
   return minutes + ':' + secs;
+};
+
+/**
+ * @param {ol.Coordinate} coordinate The current pointer coordinate.
+ * @param {ol.geom.Geometry|undefined} geometry The geometry to snap to.
+ */
+app.MainController.prototype.snapToGeometry = function(coordinate, geometry) {
+  var closestPoint = geometry.getClosestPoint(coordinate);
+  // compute distance to line in pixels
+  var dx = closestPoint[0] - coordinate[0];
+  var dy = closestPoint[1] - coordinate[1];
+  var dist = Math.sqrt(dx * dx + dy * dy);
+  var pixelDist = dist / this.map.getView().getResolution();
+
+  if (pixelDist < 8) {
+    this.profileHighlight = closestPoint[2];
+  } else {
+    this.profileHighlight = -1;
+  }
+  this.scope_.$apply();
 };
 
 app.module.controller('MainController', app.MainController);

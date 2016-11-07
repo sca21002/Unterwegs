@@ -160,7 +160,8 @@ CREATE TABLE track_points (
     ageofdgpsdata double precision,
     dgpsid integer,
     hr integer,
-    speed integer
+    speed integer,
+    dist bigint
 );
 
 
