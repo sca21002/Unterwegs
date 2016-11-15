@@ -11,11 +11,12 @@ goog.require('ngeo.mapDirective');
 /** @suppress {extraRequire} */
 goog.require('ngeo.modalDirective');
 /** @suppress {extraRequire} */
-goog.require('ngeo.profileDirective');
+goog.require('unterwegs.profileDirective');
 /** @suppress {extraRequire} */
 goog.require('unterwegs.editattributeDirective');
 /** @suppress {extraRequire} */
 goog.require('unterwegs.edittrackpointDirective');
+goog.require('ngeo.FeatureOverlayMgr');
 /** @suppress {extraRequire} */
 goog.require('unterwegs.travelModeDirective');
 goog.require('ol.Map');
@@ -24,6 +25,7 @@ goog.require('ol.layer.Tile');
 goog.require('ol.layer.Vector');
 goog.require('ol.source.Vector');
 goog.require('ol.source.XYZ');
+goog.require('ol.style.Circle');
 goog.require('ol.style.Style');
 goog.require('ol.style.Fill');
 goog.require('ol.style.Stroke');
@@ -45,10 +47,12 @@ app.module.constant('mapboxURL', 'https://api.mapbox.com/styles/v1/' +
 
 /**
  * @param {unterwegs.Track} unterwegsTrack service
+ * @param {ngeo.FeatureOverlayMgr} ngeoFeatureOverlayMgr Feature overlay
+ *     manager.
  * @constructor
  * @ngInject
  */
-app.MainController = function($scope, mapboxURL, unterwegsTrack) {
+app.MainController = function($scope, mapboxURL, ngeoFeatureOverlayMgr, unterwegsTrack) {
 
   /**
    * @type {angular.Scope}
@@ -82,13 +86,17 @@ app.MainController = function($scope, mapboxURL, unterwegsTrack) {
    */
   this.trackPoint = {}; 
 
+  /**
+   * @type {number}
+   * @export
+   */
   this.trackFidSelected;
 
   /**
-   * @type {boolean}
+   * @type {string|null}
    * @export
    */
-  this.detailMode = false;
+  this.detailMode = null;
 
   /**
    * @type {boolean}
@@ -96,31 +104,18 @@ app.MainController = function($scope, mapboxURL, unterwegsTrack) {
    */
   this.loading = false;
 
+
   /**
-   * @type {Object|undefined}
+   * @type {string|null}
    * @export
    */
-  this.profileData = undefined;
+  this.profileType; 
 
-  var vectorLayer = new ol.layer.Vector({
-    source: new ol.source.Vector(),
-    style: new ol.style.Style({
-      image: new ol.style.Circle({
-        stroke: new ol.style.Stroke({
-            width: 2,
-            color: '#f00'
-        }),
-        fill: new ol.style.Fill({
-          color: "rgba(255,51,51,0.5)"
-        }),
-        radius: 5,
-        snapToPixel: false
-      })
-    })
-  });
-
-  this.snappedPoint_ = new ol.Feature();
-  vectorLayer.getSource().addFeature(this.snappedPoint_);
+  /**
+   * @type {ol.geom.LineString}
+   * @export
+   */
+  this.profileLine = null;
 
   this.center = [10.581, 49.682];
   this.zoom = 8;
@@ -219,9 +214,9 @@ app.MainController = function($scope, mapboxURL, unterwegsTrack) {
     view: this.view
   });
 
-  // Use vectorLayer.setMap(map) rather than map.addLayer(vectorLayer). This
-  // makes the vector layer "unmanaged", meaning that it is always on top.
-  vectorLayer.setMap(this.map);
+
+  // Initialize the feature overlay manager with the map.
+  ngeoFeatureOverlayMgr.init(this.map);
 
 
   this.updateList = function() {
@@ -260,30 +255,10 @@ app.MainController = function($scope, mapboxURL, unterwegsTrack) {
     }, this, function(layer) {
         return layer.get('name') === 'trackPoints';
     });
-    if (!hit) { 
-      //  vm.unselectPreviousFeatures(); 
-    }
+    //if (!hit) { 
+    //  vm.unselectPreviousFeatures(); 
+    //}
   },this); 
-
-  /**
-   * @type {Object}
-   * @export
-   */
-  this.point = null;
-
-  /**
-   * @type {number|undefined}
-   * @export
-   */
-  this.profileHighlight = undefined;
-
-  /**
-   * @type {Object}
-   * @export
-   */
-  this.profileOptions = {
-    linesConfiguration: {}
-  };
 
   this.updateList();
 };
@@ -311,7 +286,8 @@ app.MainController.prototype.hover = function(ogc_fid) {
     map.getView().fit(
       featureGeometry, mapSize,
       /** @type {olx.view.FitOptions} */ ({maxZoom: 16}));
-  });
+    this.profileLine = /** @type {ol.geom.LineString} */ (feature.getGeometry());
+  }.bind(this));
 
 
 };
@@ -351,16 +327,13 @@ app.MainController.prototype.attributeUpdated = function() {
  */
 app.MainController.prototype.trackpointDeleted = function() {
     this.modalEditTrackPointShown = false;
-    console.log("Trackpoint deleted");
     this.updateList();
 };
 
 /**
- * @param {number} ogc_fid Feature identifier
  * @export
  */
 app.MainController.prototype.edit = function() {
-  console.log('Bin in edit');
   var trackPointSource = /** @type {ol.source.Vector} */ (this.trackPointSource);
   if (this.detailMode === 'edit') {
     trackPointSource.clear(true); 
@@ -372,143 +345,32 @@ app.MainController.prototype.edit = function() {
       var ogc_fid = this.trackFidSelected;  
       this.unterwegsTrack.getTrackPoints(ogc_fid).
       then(function(geoJSON){
-        var features = /** @type {ol.Features} */ 
+        var features = /** @type {Array.<ol.Feature>} */
             (geojsonFormat.readFeatures(geoJSON));
         trackPointSource.clear(true);        
         trackPointSource.addFeatures(features);
         this.loading = false;
       }.bind(this));    
-      this.detailMode === 'edit';
-      this.map.on('pointermove', function(evt) {
-        if (evt.dragging) {
-          return;
-        }
-        console.log('In pointermove');
-        var coordinate = this.map.getEventCoordinate(evt.originalEvent);
-        this.snapToGeometry(
-           coordinate, this.trackSource.getFeatures()[0].getGeometry()
-        );
-      }.bind(this));
+      this.detailMode = 'edit';
     }
   }    
 };
 
 /**
- * @param {number} ogc_fid Feature identifier
+ * @param {string} type Profile type
  * @export
  */
 app.MainController.prototype.profile = function(type) {
-  console.log('Bin in profile: ', type);
   if (this.detailMode) {
     this.detailMode = null;
     this.profileData = null;
+    this.profileType = null;
   } else {
     this.loading = true;
-    if (this.trackFidSelected) {
-      var ogc_fid = this.trackFidSelected;  
-      this.unterwegsTrack.getTrackPoints(ogc_fid).
-      then(function(geoJSON){
-        var data = geoJSON.features;  
-        if (type === 'elevation') {
-          data = data.filter( function(element) {
-            if (element['properties']['ele'] < 10) {
-              return false;    
-            }  else {
-              return true;
-            }   
-          });       
-        }
-        this.profileData = data;
-        this.loading = false;
-      }.bind(this));
-      this.detailMode = type;      
-
-      /**
-       * @param {Object} item
-       * @return {number}
-       */
-      var distanceExtractor = function(item) {
-            var properties = item['properties']; 
-            var dist = properties['dist'];
-              return dist;
-      };
-    
-
-      /**
-       * Factory for creating simple getter functions for extractors.
-       * If the value is in a child property, the opt_childKey must be defined.
-       * The type parameter is used by closure to type the returned function.
-       * @param {T} type An object of the expected result type.
-       * @param {string} key Key used for retrieving the value.
-       * @param {string=} opt_childKey Key of a child object.
-       * @template T
-       * @return {function(Object): T} Getter function.
-       */
-      var typedFunctionsFactory = function(type, key) {
-        return (
-            /**
-             * @param {Object} item
-             * @return {T}
-             * @template T
-             */
-            function(item) {
-              return item['properties'][key];
-            });
-      };
-
-      var types = {
-        number: 1,
-        string: ''
-      };
-
-      var profileType = 'speed';
-
-      var keyMap = {
-        heartrate: 'hr',
-        elevation: 'ele',
-        speed: 'speed'
-      };        
-
-      console.log('Type: ', type);
-      console.log('Type: ', types.number);
-
-      var linesConfiguration = {
-        'line1': {
-          style: {},
-          zExtractor: typedFunctionsFactory(types.number, keyMap[type])
-        }
-      };
-    
-      /**
-       * @param {Object} point Point.
-       */
-      var hoverCallback = function(point) {
-        // An item in the list of points given to the profile.
-        this.point = point;
-        this.snappedPoint_.setGeometry(new ol.geom.Point(point['geometry']['coordinates']));
-      }.bind(this);
-    
-      var outCallback = function() {
-        this.point = null;
-        this.snappedPoint_.setGeometry(null);
-      }.bind(this);
-    
-      /**
-       * @type {Object}
-       * @export
-       */
-      this.profileOptions = {
-        distanceExtractor: distanceExtractor,
-        linesConfiguration: linesConfiguration,
-    //    poiExtractor: poiExtractor,
-        hoverCallback: hoverCallback,
-        outCallback: outCallback
-      };
-
-    }    
+    this.profileType = type;
+    this.detailMode = type;      
   }     
 }
-  
   
   /**
  * @param {number} speed Velocity in km per hour
@@ -525,24 +387,5 @@ app.MainController.prototype.velocity_in_min_per_km = function(speed) {
   return minutes + ':' + secs;
 };
 
-/**
- * @param {ol.Coordinate} coordinate The current pointer coordinate.
- * @param {ol.geom.Geometry|undefined} geometry The geometry to snap to.
- */
-app.MainController.prototype.snapToGeometry = function(coordinate, geometry) {
-  var closestPoint = geometry.getClosestPoint(coordinate);
-  // compute distance to line in pixels
-  var dx = closestPoint[0] - coordinate[0];
-  var dy = closestPoint[1] - coordinate[1];
-  var dist = Math.sqrt(dx * dx + dy * dy);
-  var pixelDist = dist / this.map.getView().getResolution();
-
-  if (pixelDist < 8) {
-    this.profileHighlight = closestPoint[2];
-  } else {
-    this.profileHighlight = -1;
-  }
-  this.scope_.$apply();
-};
 
 app.module.controller('MainController', app.MainController);

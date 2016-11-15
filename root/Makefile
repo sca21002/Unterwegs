@@ -14,6 +14,7 @@ UNTERWEGS_APPS_LIBS_JS_FILES += \
 	node_modules/angular-ui-date/dist/date.js \
 	node_modules/bootstrap/dist/js/bootstrap.min.js \
 	node_modules/ui-bootstrap-custom/ui-bootstrap-custom-tpls-2.1.4.min.js \
+	node_modules/d3/d3.min.js \
 	node_modules/file-saver/FileSaver.min.js
 
 UNTERWEGS_APPS_LESS_FILES := $(shell find less -type f -name '*.less')

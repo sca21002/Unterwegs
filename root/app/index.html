@@ -27,10 +27,13 @@
             <div class="map-container">
               <div id="map" ngeo-map="ctrl.map">
               </div>
-              <div class="profile" ngeo-profile="ctrl.profileData"
-                                   ngeo-profile-options="ctrl.profileOptions"
-                                   ngeo-profile-highlight="ctrl.profileHighlight">
-              </div>    
+              <unterwegs-profile
+                unterwegs-profile-type="ctrl.profileType"
+                unterwegs-profile-line="ctrl.profileLine"
+                unterwegs-profile-map="ctrl.map"
+                unterwegs-track-fid="ctrl.trackFidSelected"
+                unterwegs-track-source="ctrl.trackSource">
+              </unterwegs-profile>
             </div>
           </div>
           <div class="col-md-5">
@@ -107,8 +110,8 @@
     <script src="../node_modules/d3/d3.js"></script> 
     <script src="../node_modules/angular-float-thead/angular-floatThead.js"></script> 
     <script src="../node_modules/bootstrap/dist/js/bootstrap.js"></script>
-    <script src="/@?main=js/app.js"></script> 
-    <!-- <script src="../build/unterwegs.js"></script> --> 
+    <script src="/@?main=js/app.js"></script>
+    <!-- <script src="../build/unterwegs.js"></script> -->
     <script src="default.js"></script>
   </body>
 </html>

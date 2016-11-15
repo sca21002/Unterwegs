@@ -40,13 +40,6 @@ unterwegs.EdittrackpointController = function(unterwegsTrackpoint) {
    */
   this.trackpoint;
 
-  /**
-   * @type {string}
-   * @export
-   */
-  this.test = this.trackpoint.ogc_fid;
-  console.log('ogc_fid: ', this.trackpoint.get('ogc_fid'));
-  console.log('Trackpoint: ', this.trackpoint);
 };
 
 /**
