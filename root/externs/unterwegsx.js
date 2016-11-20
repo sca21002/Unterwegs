@@ -25,15 +25,15 @@ unterwegsx.Track;
 unterwegsx.Track.prototype.ogc_fid;
 
 /**
- * TrackPoint
+ * Trackpoint
  * @typedef {{
  *     ogc_fid: (number)
  * }}
  */
-unterwegsx.TrackPoint;
+unterwegsx.Trackpoint;
 
 /**
  * The identifier for the track point
  * @type {number}
  */
-unterwegsx.TrackPoint.prototype.ogc_fid;
+unterwegsx.Trackpoint.prototype.ogc_fid;

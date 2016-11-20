@@ -2,6 +2,8 @@ This file documents the revision history for Perl web application Unterwegs.
 
 {{$NEXT}}
 
+    - Move editing trackpoints into a directive
+
 0.014     2016-11-15 21:25:30+01:00 Europe/Berlin
 
     - Add profiles for heartrate, elevation and speed

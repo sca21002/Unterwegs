@@ -13,14 +13,18 @@
     <main>
       <ngeo-modal ng-model="ctrl.modalEditAttributeShown" 
         ngeo-modal-destroy-content-on-hide="true">
-        <unterwegs-editattribute track="ctrl.track" 
+        <unterwegs-editattribute 
+          track="ctrl.track" 
           finish="ctrl.attributeUpdated()" />
       </ngeo-modal>
-      <ngeo-modal ng-model="ctrl.modalEditTrackPointShown"
-        ngeo-modal-destroy-content-on-hide="true">
-        <unterwegs-edittrackpoint trackpoint="ctrl.trackPoint"
-          finish="ctrl.trackpointDeleted()" />  
-      </ngeo-modal>    
+      <div>
+      <unterwegs-edittrackpoint
+        unterwegs-edittrackpoint-active="ctrl.editTrackpointActive"
+        unterwegs-edittrackpoint-fid="ctrl.trackFidSelected"
+        unterwegs-edittrackpoint-map="ctrl.map"
+        unterwegs-edittrackpoint-trackfid="ctrl.trackFidSelected"
+        unterwegs-edittrackpoint-finish="ctrl.trackpointDeleted()" /> 
+      </div>    
       <div class="container-fluid">
         <div class="row">
           <div class="col-md-7">

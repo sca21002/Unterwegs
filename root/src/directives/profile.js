@@ -12,8 +12,7 @@ goog.require('ol.style.Stroke');
 goog.require('ol.style.Fill');
 goog.require('ol.geom.Point');
 goog.require('ol.geom.LineString');
-
-
+goog.require('unterwegs.Track');
 
 
 unterwegs.profileDirective = function() {

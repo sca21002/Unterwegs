@@ -1,7 +1,7 @@
 goog.provide('app.MainController');
 
 goog.require('unterwegs');
-goog.require('ol');
+goog.require('ngeo.FeatureOverlayMgr');
 /**
  * This goog.require is needed because it provides 'ngeo-map' used in
  * the template.
@@ -11,27 +11,26 @@ goog.require('ngeo.mapDirective');
 /** @suppress {extraRequire} */
 goog.require('ngeo.modalDirective');
 /** @suppress {extraRequire} */
-goog.require('unterwegs.profileDirective');
+goog.require('unterwegs.travelModeDirective');
+// goog.require('ol');
+goog.require('ol.format.GeoJSON');
+goog.require('ol.geom.Point');
+goog.require('ol.layer.Tile');
+goog.require('ol.layer.Vector');
+goog.require('ol.Map');
+goog.require('ol.source.Vector');
+goog.require('ol.source.XYZ');
+goog.require('ol.style.Fill');
+goog.require('ol.style.Stroke');
+goog.require('ol.style.Style');
+goog.require('ol.style.Text');
+goog.require('ol.View');
 /** @suppress {extraRequire} */
 goog.require('unterwegs.editattributeDirective');
 /** @suppress {extraRequire} */
 goog.require('unterwegs.edittrackpointDirective');
-goog.require('ngeo.FeatureOverlayMgr');
 /** @suppress {extraRequire} */
-goog.require('unterwegs.travelModeDirective');
-goog.require('ol.Map');
-goog.require('ol.View');
-goog.require('ol.layer.Tile');
-goog.require('ol.layer.Vector');
-goog.require('ol.source.Vector');
-goog.require('ol.source.XYZ');
-goog.require('ol.style.Circle');
-goog.require('ol.style.Style');
-goog.require('ol.style.Fill');
-goog.require('ol.style.Stroke');
-goog.require('ol.style.Text');
-goog.require('ol.format.GeoJSON');
-goog.require('ol.geom.Point');
+goog.require('unterwegs.profileDirective');
 goog.require('unterwegs.Track');
 
 /** @type {!angular.Module} **/
@@ -46,9 +45,11 @@ app.module.constant('mapboxURL', 'https://api.mapbox.com/styles/v1/' +
 
 
 /**
- * @param {unterwegs.Track} unterwegsTrack service
+ * @param {angular.Scope} $scope Angular scope.
+ * @param {string} mapboxURL Url to Mapbox tile service.
  * @param {ngeo.FeatureOverlayMgr} ngeoFeatureOverlayMgr Feature overlay
  *     manager.
+ * @param {unterwegs.Track} unterwegsTrack service
  * @constructor
  * @ngInject
  */
@@ -60,7 +61,12 @@ app.MainController = function($scope, mapboxURL, ngeoFeatureOverlayMgr, unterweg
    */
   this.scope_ = $scope;
 
-  this.unterwegsTrack = unterwegsTrack;
+  /**
+   * Track service
+   * @type {unterwegs.Track}  
+   * @private
+   */
+  this.unterwegsTrack_ = unterwegsTrack;
             
   /**
    * @type {boolean}
@@ -72,19 +78,14 @@ app.MainController = function($scope, mapboxURL, ngeoFeatureOverlayMgr, unterweg
    * @type {boolean}
    * @export
    */
-  this.modalEditTrackPointShown = false;
+  this.editTrackpointActive = false;
+
 
   /**
    * @type {Object}
    * @export
    */
   this.track = {}; 
-
-  /**
-   * @type {Object}
-   * @export
-   */
-  this.trackPoint = {}; 
 
   /**
    * @type {number}
@@ -124,10 +125,6 @@ app.MainController = function($scope, mapboxURL, ngeoFeatureOverlayMgr, unterweg
   this.trackSource = new ol.source.Vector({
     features: []
   });
-
-  this.trackPointSource = new ol.source.Vector({
-    features: []
-  });  
 
   this.view = new ol.View({
     center: ol.proj.transform(
@@ -193,23 +190,10 @@ app.MainController = function($scope, mapboxURL, ngeoFeatureOverlayMgr, unterweg
         })
       }),
       new ol.layer.Vector({
+        name: 'track',  
         source: this.trackSource,
         style: this.trackStyleFunction 
-      }),
-      new ol.layer.Vector({
-        name: 'trackPoints',
-        source: this.trackPointSource,
-        style: new ol.style.Style({
-          image: new ol.style.Circle({
-            stroke: new ol.style.Stroke({
-                width: 1,
-                color: 'rgba(255,51,51,1)'
-            }),
-            radius: 3,
-            snapToPixel: false
-          })
-        })
-	  }),
+      })
     ],  
     view: this.view
   });
@@ -220,7 +204,7 @@ app.MainController = function($scope, mapboxURL, ngeoFeatureOverlayMgr, unterweg
 
 
   this.updateList = function() {
-    unterwegsTrack.getList(this.page).then(function(data){
+    this.unterwegsTrack_.getList(this.page).then(function(data){
       /**
        *  @type {Array.<Object>}
        *  @export
@@ -240,26 +224,6 @@ app.MainController = function($scope, mapboxURL, ngeoFeatureOverlayMgr, unterweg
     }.bind(this));
   }; 
 
-  ol.events.listen(this.map, ol.MapBrowserEvent.EventType.CLICK,
-    function(event) {
-    // this is target (this.map)
-    var hit = this.map.forEachFeatureAtPixel(event.pixel, function(feature) {
-      // vm.unselectPreviousFeatures();
-      // feature.setStyle(vm.viewpointStyleSelectedFn(feature));
-      //vm.selectedFeatures.push(feature);
-      this.modalEditTrackPointShown = true;
-      // modalEditTrackPointShown = true;
-      this.trackPoint = feature;
-      $scope.$apply();
-      return true;
-    }, this, function(layer) {
-        return layer.get('name') === 'trackPoints';
-    });
-    //if (!hit) { 
-    //  vm.unselectPreviousFeatures(); 
-    //}
-  },this); 
-
   this.updateList();
 };
 
@@ -274,7 +238,7 @@ app.MainController.prototype.hover = function(ogc_fid) {
   var map = /** @type {ol.Map} */ (this.map);
   var trackSource = /** @type {ol.source.Vector} */ (this.trackSource);
   var geojsonFormat = new ol.format.GeoJSON();
-  this.unterwegsTrack.getTrack(ogc_fid).
+  this.unterwegsTrack_.getTrack(ogc_fid).
   then(function(geoJSON){
     var feature = /** @type {ol.Feature} */ 
         (geojsonFormat.readFeature(geoJSON));
@@ -326,34 +290,14 @@ app.MainController.prototype.attributeUpdated = function() {
  * @export
  */
 app.MainController.prototype.trackpointDeleted = function() {
-    this.modalEditTrackPointShown = false;
-    this.updateList();
+//    this.updateList();
 };
 
 /**
  * @export
  */
 app.MainController.prototype.edit = function() {
-  var trackPointSource = /** @type {ol.source.Vector} */ (this.trackPointSource);
-  if (this.detailMode === 'edit') {
-    trackPointSource.clear(true); 
-    this.detailMode = null;
-  } else {
-    this.loading = true;
-    var geojsonFormat = new ol.format.GeoJSON();
-    if (this.trackFidSelected) {
-      var ogc_fid = this.trackFidSelected;  
-      this.unterwegsTrack.getTrackPoints(ogc_fid).
-      then(function(geoJSON){
-        var features = /** @type {Array.<ol.Feature>} */
-            (geojsonFormat.readFeatures(geoJSON));
-        trackPointSource.clear(true);        
-        trackPointSource.addFeatures(features);
-        this.loading = false;
-      }.bind(this));    
-      this.detailMode = 'edit';
-    }
-  }    
+  this.editTrackpointActive = true;
 };
 
 /**
