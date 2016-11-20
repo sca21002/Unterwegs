@@ -2,6 +2,8 @@ This file documents the revision history for Perl web application Unterwegs.
 
 {{$NEXT}}
 
+0.015     2016-11-20 12:20:36+01:00 Europe/Berlin
+
     - Move editing trackpoints into a directive
 
 0.014     2016-11-15 21:25:30+01:00 Europe/Berlin
