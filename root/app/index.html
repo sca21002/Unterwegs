@@ -77,30 +77,8 @@
                 </tr>     
               </tbody>    
             </table>
-            <i class="material-icons md-14"
-               ng-class="{'detail-mode-active': ctrl.detailMode === 'edit'}"
-               ng-click="ctrl.edit()">    
-              mode_edit
-            </i>  
-            <i class="material-icons md-14"
-               ng-class="{'detail-mode-active': (ctrl.detailMode === 'heartrate')}"
-               ng-click="ctrl.profile('heartrate')">    
-              favorite
-            </i>  
-            <i class="fa fa-area-chart" aria-hidden="true"
-               ng-class="{'detail-mode-active': (ctrl.detailMode === 'elevation')}"
-               ng-click="ctrl.profile('elevation')">  
-            </i>
-            <i class="material-icons md-14"
-               ng-class="{'detail-mode-active': (ctrl.detailMode === 'speed')}"
-               ng-click="ctrl.profile('speed')">    
-              network_check   
-            </i>  
-            <div
-              ng-show="ctrl.loading"
-              class="loading">
-              <span class="fa fa-spinner fa-spin"></span>
-            </div>
+            <unterwegs-panel
+              unterwegs-panel-action="ctrl.getPanelActionFunction()" />
           </div>    
         </div>
       </div> 
@@ -114,7 +92,7 @@
     <script src="../node_modules/d3/d3.js"></script> 
     <script src="../node_modules/angular-float-thead/angular-floatThead.js"></script> 
     <script src="../node_modules/bootstrap/dist/js/bootstrap.js"></script>
-    <script src="/@?main=js/app.js"></script>
+    <script src="/@?main=js/app.js"></script> 
     <!-- <script src="../build/unterwegs.js"></script> -->
     <script src="default.js"></script>
   </body>

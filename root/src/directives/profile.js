@@ -177,6 +177,7 @@ unterwegs.ProfileController = function($scope, ngeoFeatureOverlayMgr,
       return this.profileType;
     }.bind(this),
     function(newValue, oldValue) {
+      console.log('watch: ', oldValue, ' ==> ', newValue);
       if (oldValue !== newValue) {
         console.log('Wert geändert: ', oldValue, ' --> ', newValue);
         this.getData_();
@@ -190,7 +191,7 @@ unterwegs.ProfileController = function($scope, ngeoFeatureOverlayMgr,
   @private
  */
 unterwegs.ProfileController.prototype.getData_ = function() {
-  if (this.trackFid) {
+  if (this.trackFid && this.profileType) {
     var ogc_fid = this.trackFid;  
     this.unterwegsTrack.getTrackPoints(ogc_fid).
     then(function(geoJSON){
@@ -205,9 +206,9 @@ unterwegs.ProfileController.prototype.getData_ = function() {
         });       
       }
       this.profileData = data;
+      this.linesConfiguration_['line1']['zExtractor'] = this.getZFactory_(this.keyMap_[this.profileType]);
     }.bind(this));  
 
-    this.linesConfiguration_['line1']['zExtractor'] = this.getZFactory_(this.keyMap_[this.profileType]);
   }      
 };
 
@@ -215,10 +216,12 @@ unterwegs.ProfileController.prototype.getData_ = function() {
  * @private
  */
 unterwegs.ProfileController.prototype.updateEventsListening_ = function() {
-  if (this.profileType && this.map_ !== null) {
+  if (this.profileType && this.trackFid && this.map_ !== null) {
+    console.log('register listener pointermove');  
     this.pointerMoveKey_ = ol.events.listen(this.map_, 'pointermove',
         this.onPointerMove_.bind(this));
   } else {
+    console.log('unregister listener pointermove');  
     ol.Observable.unByKey(this.pointerMoveKey_);
   }
 };

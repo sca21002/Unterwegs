@@ -1,0 +1,24 @@
+<i class="material-icons md-14"
+   ng-class="{'unterwegs-panel-active': plCtrl.active === 'edit'}"
+   ng-click="plCtrl.action('edit')">    
+  mode_edit
+</i>  
+<i class="material-icons md-14"
+   ng-class="{'unterwegs-panel-active': plCtrl.active === 'heartrate'}"
+   ng-click="plCtrl.action('heartrate')">    
+  favorite
+</i>  
+<i class="fa fa-area-chart" aria-hidden="true"
+   ng-class="{'unterwegs-panel-active': plCtrl.active === 'elevation'}"
+   ng-click="plCtrl.action('elevation')">  
+</i>
+<i class="material-icons md-14"
+   ng-class="{'unterwegs-panel-active': plCtrl.active === 'speed'}"
+   ng-click="plCtrl.action('speed')">    
+  network_check   
+</i>  
+<div
+  ng-show="plCtrl.loading"
+  class="unterwegs-panel-loading">
+  <span class="fa fa-spinner fa-spin"></span>
+</div>

@@ -10,8 +10,6 @@ goog.require('ngeo.FeatureOverlayMgr');
 goog.require('ngeo.mapDirective');
 /** @suppress {extraRequire} */
 goog.require('ngeo.modalDirective');
-/** @suppress {extraRequire} */
-goog.require('unterwegs.travelModeDirective');
 // goog.require('ol');
 goog.require('ol.format.GeoJSON');
 goog.require('ol.geom.Point');
@@ -30,8 +28,12 @@ goog.require('unterwegs.editattributeDirective');
 /** @suppress {extraRequire} */
 goog.require('unterwegs.edittrackpointDirective');
 /** @suppress {extraRequire} */
+goog.require('unterwegs.panelDirective');
+/** @suppress {extraRequire} */
 goog.require('unterwegs.profileDirective');
 goog.require('unterwegs.Track');
+/** @suppress {extraRequire} */
+goog.require('unterwegs.travelModeDirective');
 
 /** @type {!angular.Module} **/
 app.module = angular.module('unterwegsApp', [unterwegs.module.name, 'ui.bootstrap']);
@@ -110,7 +112,7 @@ app.MainController = function($scope, mapboxURL, ngeoFeatureOverlayMgr, unterweg
    * @type {string|null}
    * @export
    */
-  this.profileType; 
+  this.profileType = ''; 
 
   /**
    * @type {ol.geom.LineString}
@@ -225,6 +227,7 @@ app.MainController = function($scope, mapboxURL, ngeoFeatureOverlayMgr, unterweg
   }; 
 
   this.updateList();
+  console.log('This: ', this);
 };
 
 
@@ -314,8 +317,26 @@ app.MainController.prototype.profile = function(type) {
     this.profileType = type;
     this.detailMode = type;      
   }     
-}
+};
   
+/**
+ * @return {function(string, string)} A function that triggers actions
+ * @export
+ */
+app.MainController.prototype.getPanelActionFunction = function() {
+  return (  
+    function(mode, status) {      
+      console.log('panelAction: ', mode, ' - ', status);
+      if (mode === 'edit') {
+        console.log('Mode: edit');
+        this.editTrackpointActive = status === 'on';    
+      } else {
+        console.log('Profile: ', mode);
+        this.profileType = status === 'on' ? mode : '';
+      } 
+    }.bind(this));  
+};
+
   /**
  * @param {number} speed Velocity in km per hour
  * @export

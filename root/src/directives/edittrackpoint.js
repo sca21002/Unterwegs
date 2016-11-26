@@ -140,7 +140,7 @@ unterwegs.EdittrackpointController = function($scope, ngeoFeatureOverlayMgr,
   @private
  */
 unterwegs.EdittrackpointController.prototype.getData_ = function() {
-  if (this.trackFid) {
+  if (this.trackFid && this.active) {
     var ogc_fid = this.trackFid  
     var geojsonFormat = new ol.format.GeoJSON();
     this.unterwegsTrack_.getTrackPoints(ogc_fid).
@@ -153,6 +153,8 @@ unterwegs.EdittrackpointController.prototype.getData_ = function() {
         this.trackpointOverlay_.addFeature(item);      
       }.bind(this));
     }.bind(this));    
+  } else {
+    this.trackpointOverlay_.clear();    
   }
 };
 
@@ -161,8 +163,15 @@ unterwegs.EdittrackpointController.prototype.getData_ = function() {
  * @private
  */
 unterwegs.EdittrackpointController.prototype.updateEventsListening_ = function() {
-  this.clickKey_ = ol.events.listen(
-    this.map_, ol.events.EventType.CLICK, this.handleMapClick_, this);
+    
+  if (this.active && this.trackFid && this.map_ !== null) {
+    console.log('register listener click');  
+    this.clickKey_ = ol.events.listen(
+      this.map_, ol.events.EventType.CLICK, this.handleMapClick_, this);
+  } else {
+    console.log('unregister listener click');  
+    ol.Observable.unByKey(this.clickKey_);
+  }
 };
 
 
