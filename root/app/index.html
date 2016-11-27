@@ -41,44 +41,20 @@
             </div>
           </div>
           <div class="col-md-5">
-            <table class="table table-condensed table-hover">
-              <thead></thead> 
-              <tfoot>
-                <tr>
-                  <td>
-                    <div class="text-center">
-                      <ul uib-pagination ng-model= "ctrl.page" 
-                        total-items= "ctrl.totalTracks" max-size = 6 
-                        items-per-page = 5 num-pages="ctrl.numPages" 
-                        ng-change="ctrl.pageChanged()" >
-                      </ul>
-                    </div>
-                  </td>    
-                </tr>
-              </tfoot>    
-              <tbody>
-                <tr ng-repeat="track in ctrl.tracks" 
-                    ng-mouseenter="ctrl.hover(track.ogc_fid)"
-                    ng-click="ctrl.click(track)">
-                  <td>
-                    <div>{{track.name}} ({{track.file}})
-                    <unterwegs-travel-mode mode="{{track.icon}}" />
-                    </div>
-                    <div>{{track.len / 1000 | number:2}} km 
-                      <span ng-show="track.travel_mode_id != 2">
-                        ({{track.avg_speed | number:2}} km/h)
-                      </span>
-                      <span ng-show="track.travel_mode_id == 2">
-                        ({{ctrl.velocity_in_min_per_km(track.avg_speed)}} min/km)
-                      </span>
-                    <div>{{track.start}}-{{track.end}} ({{track.duration}})  
-                    </div>
-                  </td>    
-                </tr>     
-              </tbody>    
-            </table>
-            <unterwegs-panel
-              unterwegs-panel-action="ctrl.getPanelActionFunction()" />
+            <div>  
+              <unterwegs-list 
+                unterwegs-list-tracks="ctrl.tracks"
+                unterwegs-list-page="ctrl.page"
+                unterwegs-list-totaltracks="ctrl.totalTracks"
+                unterwegs-list-numpages="ctrl.numPages"
+                unterwegs-list-pagechanged="ctrl.pageChanged()"
+                unterwegs-list-hover="ctrl.hoverFunction()",
+                unterwegs-list-click="ctrl.clickFunction()" />  
+            </div> 
+            <div>  
+              <unterwegs-panel
+                unterwegs-panel-action="ctrl.getPanelActionFunction()" />
+            </div>  
           </div>    
         </div>
       </div> 
@@ -91,7 +67,7 @@
     <script src="../node_modules/ui-bootstrap-custom/ui-bootstrap-custom-tpls-2.1.4.min.js"></script> 
     <script src="../node_modules/d3/d3.js"></script> 
     <script src="../node_modules/angular-float-thead/angular-floatThead.js"></script> 
-    <script src="../node_modules/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="../node_modules/bootstrap/dist/js/bootstrap.js"></script> 
     <script src="/@?main=js/app.js"></script> 
     <!-- <script src="../build/unterwegs.js"></script> -->
     <script src="default.js"></script>

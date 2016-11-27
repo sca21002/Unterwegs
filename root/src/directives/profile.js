@@ -18,11 +18,11 @@ goog.require('unterwegs.Track');
 unterwegs.profileDirective = function() {
   return {
     bindToController: {
-      profileType: '=unterwegsProfileType',
-      getMapFn:    '&?unterwegsProfileMap',
-      line:        '=unterwegsprofileLine',  
-      trackFid:    '=unterwegsTrackFid',
-      trackSource: '=unterwegsTrackSource'    
+      'profileType': '=unterwegsProfileType',
+      'getMapFn':    '&?unterwegsProfileMap',
+      'line':        '=unterwegsprofileLine',  
+      'trackFid':    '=unterwegsTrackFid',
+      'trackSource': '=unterwegsTrackSource'    
     },
     controller: 'UnterwegsProfileController',
     controllerAs: 'ctrl',
@@ -177,9 +177,7 @@ unterwegs.ProfileController = function($scope, ngeoFeatureOverlayMgr,
       return this.profileType;
     }.bind(this),
     function(newValue, oldValue) {
-      console.log('watch: ', oldValue, ' ==> ', newValue);
       if (oldValue !== newValue) {
-        console.log('Wert geändert: ', oldValue, ' --> ', newValue);
         this.getData_();
         this.updateEventsListening_();
       }
@@ -217,11 +215,9 @@ unterwegs.ProfileController.prototype.getData_ = function() {
  */
 unterwegs.ProfileController.prototype.updateEventsListening_ = function() {
   if (this.profileType && this.trackFid && this.map_ !== null) {
-    console.log('register listener pointermove');  
     this.pointerMoveKey_ = ol.events.listen(this.map_, 'pointermove',
         this.onPointerMove_.bind(this));
   } else {
-    console.log('unregister listener pointermove');  
     ol.Observable.unByKey(this.pointerMoveKey_);
   }
 };

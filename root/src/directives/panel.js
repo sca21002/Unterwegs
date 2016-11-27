@@ -7,7 +7,7 @@ goog.require('unterwegs');
 unterwegs.panelDirective = function() {
   return {
     bindToController: {
-      panelActionFn: '&unterwegsPanelAction'    
+      'panelActionFn': '&unterwegsPanelAction'    
     },
     controller: 'UnterwegsPanelController',
     controllerAs: 'plCtrl',
@@ -42,10 +42,10 @@ unterwegs.PanelController = function() {
      */
     this.panelActionFn;
 
-
+    /**
+     * @export
+     */ 
     this.panelAction = this.panelActionFn();
-    console.log('Function: ', this.panelAction);
-
 };
 
 /**

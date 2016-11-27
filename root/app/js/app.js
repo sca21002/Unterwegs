@@ -28,6 +28,8 @@ goog.require('unterwegs.editattributeDirective');
 /** @suppress {extraRequire} */
 goog.require('unterwegs.edittrackpointDirective');
 /** @suppress {extraRequire} */
+goog.require('unterwegs.listDirective');
+/** @suppress {extraRequire} */
 goog.require('unterwegs.panelDirective');
 /** @suppress {extraRequire} */
 goog.require('unterwegs.profileDirective');
@@ -48,6 +50,7 @@ app.module.constant('mapboxURL', 'https://api.mapbox.com/styles/v1/' +
 
 /**
  * @param {angular.Scope} $scope Angular scope.
+ * @param {angular.Stimerout} $timeout Angular timeout.
  * @param {string} mapboxURL Url to Mapbox tile service.
  * @param {ngeo.FeatureOverlayMgr} ngeoFeatureOverlayMgr Feature overlay
  *     manager.
@@ -55,13 +58,16 @@ app.module.constant('mapboxURL', 'https://api.mapbox.com/styles/v1/' +
  * @constructor
  * @ngInject
  */
-app.MainController = function($scope, mapboxURL, ngeoFeatureOverlayMgr, unterwegsTrack) {
+app.MainController = function($scope, $timeout, mapboxURL, ngeoFeatureOverlayMgr, unterwegsTrack) {
 
   /**
    * @type {angular.Scope}
    * @private
    */
   this.scope_ = $scope;
+
+  this.timeout_ = $timeout;
+
 
   /**
    * Track service
@@ -94,12 +100,6 @@ app.MainController = function($scope, mapboxURL, ngeoFeatureOverlayMgr, unterweg
    * @export
    */
   this.trackFidSelected;
-
-  /**
-   * @type {string|null}
-   * @export
-   */
-  this.detailMode = null;
 
   /**
    * @type {boolean}
@@ -227,45 +227,47 @@ app.MainController = function($scope, mapboxURL, ngeoFeatureOverlayMgr, unterweg
   }; 
 
   this.updateList();
-  console.log('This: ', this);
 };
 
 
 /**
- * @param {number} ogc_fid Feature identifier
+ * @return {function(number)} A function that triggers actions
  * @export
  */
-app.MainController.prototype.hover = function(ogc_fid) {
-  if (this.detailMode) { return null; }
-  this.trackFidSelected = ogc_fid;
-  var map = /** @type {ol.Map} */ (this.map);
-  var trackSource = /** @type {ol.source.Vector} */ (this.trackSource);
-  var geojsonFormat = new ol.format.GeoJSON();
-  this.unterwegsTrack_.getTrack(ogc_fid).
-  then(function(geoJSON){
-    var feature = /** @type {ol.Feature} */ 
-        (geojsonFormat.readFeature(geoJSON));
-    trackSource.clear(true);        
-    trackSource.addFeature(feature);
-    var featureGeometry = /** @type {ol.geom.SimpleGeometry} */
-        (feature.getGeometry());
-    var mapSize = /** @type {ol.Size} */ (map.getSize());
-    map.getView().fit(
-      featureGeometry, mapSize,
-      /** @type {olx.view.FitOptions} */ ({maxZoom: 16}));
-    this.profileLine = /** @type {ol.geom.LineString} */ (feature.getGeometry());
-  }.bind(this));
-
-
+app.MainController.prototype.hoverFunction = function() {
+  return (    
+    function(ogc_fid) {
+      this.trackFidSelected = ogc_fid;
+      var map = /** @type {ol.Map} */ (this.map);
+      var trackSource = /** @type {ol.source.Vector} */ (this.trackSource);
+      var geojsonFormat = new ol.format.GeoJSON();
+      this.unterwegsTrack_.getTrack(ogc_fid).
+      then(function(geoJSON){
+        var feature = /** @type {ol.Feature} */ 
+            (geojsonFormat.readFeature(geoJSON));
+        trackSource.clear(true);        
+        trackSource.addFeature(feature);
+        var featureGeometry = /** @type {ol.geom.SimpleGeometry} */
+            (feature.getGeometry());
+        var mapSize = /** @type {ol.Size} */ (map.getSize());
+        map.getView().fit(
+          featureGeometry, mapSize,
+          /** @type {olx.view.FitOptions} */ ({maxZoom: 16}));
+        this.profileLine = /** @type {ol.geom.LineString} */ (feature.getGeometry());
+      }.bind(this));
+    }.bind(this));  
 };
 
 /**
- * @param {Object} track track feature
+ * @return {function(Object)} A function that triggers actions
  * @export
  */
-app.MainController.prototype.click = function(track) {
-  this.modalEditAttributeShown = true;
-  this.track = track;
+app.MainController.prototype.clickFunction = function() {
+  return (    
+    function(track) {
+      this.modalEditAttributeShown = true;
+      this.track = track;
+    }.bind(this));  
 };
 
 
@@ -274,12 +276,13 @@ app.MainController.prototype.click = function(track) {
  * @export
  */
 app.MainController.prototype.pageChanged = function() {
-    if (this.page !== this.fetchedPage && !this.detailMode ) {
-      this.updateList();
-    }
+    this.timeout_(function() {
+      if (this.page !== this.fetchedPage) {
+        this.updateList();
+      }
+    }.bind(this), 0);  
 };
 
-/**
 /**
  * @export
  */
@@ -288,7 +291,6 @@ app.MainController.prototype.attributeUpdated = function() {
     this.updateList();
 };
 
-/**
 /**
  * @export
  */
@@ -303,21 +305,6 @@ app.MainController.prototype.edit = function() {
   this.editTrackpointActive = true;
 };
 
-/**
- * @param {string} type Profile type
- * @export
- */
-app.MainController.prototype.profile = function(type) {
-  if (this.detailMode) {
-    this.detailMode = null;
-    this.profileData = null;
-    this.profileType = null;
-  } else {
-    this.loading = true;
-    this.profileType = type;
-    this.detailMode = type;      
-  }     
-};
   
 /**
  * @return {function(string, string)} A function that triggers actions
@@ -326,31 +313,12 @@ app.MainController.prototype.profile = function(type) {
 app.MainController.prototype.getPanelActionFunction = function() {
   return (  
     function(mode, status) {      
-      console.log('panelAction: ', mode, ' - ', status);
       if (mode === 'edit') {
-        console.log('Mode: edit');
         this.editTrackpointActive = status === 'on';    
       } else {
-        console.log('Profile: ', mode);
         this.profileType = status === 'on' ? mode : '';
       } 
     }.bind(this));  
 };
-
-  /**
- * @param {number} speed Velocity in km per hour
- * @export
- */
-app.MainController.prototype.velocity_in_min_per_km = function(speed) {
-  var velocity = 60 / speed;    // [ min / km ] 
-  var minutes = Math.floor(velocity);
-  var seconds = Math.round(velocity * 60) % 60;
-  var secs = seconds + "";
-  if (secs.length < 2) {
-    secs = '0' + secs;
-  }
-  return minutes + ':' + secs;
-};
-
 
 app.module.controller('MainController', app.MainController);

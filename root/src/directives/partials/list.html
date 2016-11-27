@@ -1,0 +1,36 @@
+<table class="table table-condensed table-hover">
+  <thead></thead> 
+  <tfoot>
+    <tr>
+      <td>
+        <div class="text-center">
+          <ul uib-pagination ng-model="ltCtrl.page" 
+            total-items= "ltCtrl.totalTracks" max-size = 6 
+            items-per-page = 5 num-pages="ltCtrl.numPages" 
+            ng-change="ltCtrl.pageChanged()" >
+          </ul>
+        </div>
+      </td>    
+    </tr>
+  </tfoot>    
+  <tbody>
+    <tr ng-repeat="track in ltCtrl.tracks" 
+        ng-mouseenter="ltCtrl.hover(track.ogc_fid)"
+        ng-click="ltCtrl.click(track)">
+      <td>
+        <div>{{track.name}} ({{track.file}})
+        <unterwegs-travel-mode mode="{{track.icon}}" />
+        </div>
+        <div>{{track.len / 1000 | number:2}} km 
+          <span ng-show="track.travel_mode_id != 2">
+            ({{track.avg_speed | number:2}} km/h)
+          </span>
+          <span ng-show="track.travel_mode_id == 2">
+            ({{ltCtrl.unterwegsCalculation.velocityInMinPerKm(track.avg_speed)}} min/km) 
+          </span>
+        <div>{{track.start}}-{{track.end}} ({{track.duration}})  
+        </div>
+      </td>    
+    </tr>     
+  </tbody>    
+</table>

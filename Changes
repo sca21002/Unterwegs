@@ -2,6 +2,8 @@ This file documents the revision history for Perl web application Unterwegs.
 
 {{$NEXT}}
 
+    - Move track list into a directive
+
 0.016     2016-11-26 14:12:18+01:00 Europe/Berlin
 
     - Move panel for profiles and editing into a directive
