@@ -1,4 +1,8 @@
 goog.provide('app.MainController');
+  this.trackSource = new ol.source.Vector({
+    features: []
+  });
+
 
 goog.require('unterwegs');
 goog.require('ngeo.FeatureOverlayMgr');
@@ -10,18 +14,10 @@ goog.require('ngeo.FeatureOverlayMgr');
 goog.require('ngeo.mapDirective');
 /** @suppress {extraRequire} */
 goog.require('ngeo.modalDirective');
-// goog.require('ol');
-goog.require('ol.format.GeoJSON');
-goog.require('ol.geom.Point');
 goog.require('ol.layer.Tile');
-goog.require('ol.layer.Vector');
 goog.require('ol.Map');
 goog.require('ol.source.Vector');
 goog.require('ol.source.XYZ');
-goog.require('ol.style.Fill');
-goog.require('ol.style.Stroke');
-goog.require('ol.style.Style');
-goog.require('ol.style.Text');
 goog.require('ol.View');
 /** @suppress {extraRequire} */
 goog.require('unterwegs.editattributeDirective');
@@ -34,6 +30,7 @@ goog.require('unterwegs.panelDirective');
 /** @suppress {extraRequire} */
 goog.require('unterwegs.profileDirective');
 goog.require('unterwegs.Track');
+goog.require('unterwegs.Trackline');
 /** @suppress {extraRequire} */
 goog.require('unterwegs.travelModeDirective');
 
@@ -50,15 +47,17 @@ app.module.constant('mapboxURL', 'https://api.mapbox.com/styles/v1/' +
 
 /**
  * @param {angular.Scope} $scope Angular scope.
- * @param {angular.Stimerout} $timeout Angular timeout.
+ * @param {angular.$timeout} $timeout Angular timeout service.
  * @param {string} mapboxURL Url to Mapbox tile service.
  * @param {ngeo.FeatureOverlayMgr} ngeoFeatureOverlayMgr Feature overlay
  *     manager.
  * @param {unterwegs.Track} unterwegsTrack service
+ * @param {unterwegs.Trackline} unterwegsTrackline service
  * @constructor
  * @ngInject
  */
-app.MainController = function($scope, $timeout, mapboxURL, ngeoFeatureOverlayMgr, unterwegsTrack) {
+app.MainController = function($scope, $timeout, mapboxURL, 
+  ngeoFeatureOverlayMgr, unterwegsTrack, unterwegsTrackline) {
 
   /**
    * @type {angular.Scope}
@@ -66,6 +65,10 @@ app.MainController = function($scope, $timeout, mapboxURL, ngeoFeatureOverlayMgr
    */
   this.scope_ = $scope;
 
+  /**
+   * @type {angular.$timeout}
+   * @private
+   */
   this.timeout_ = $timeout;
 
 
@@ -75,6 +78,13 @@ app.MainController = function($scope, $timeout, mapboxURL, ngeoFeatureOverlayMgr
    * @private
    */
   this.unterwegsTrack_ = unterwegsTrack;
+            
+  /**
+   * Trackline service
+   * @type {unterwegs.Trackline}  
+   * @private
+   */
+  this.unterwegsTrackline_ = unterwegsTrackline;
             
   /**
    * @type {boolean}
@@ -124,10 +134,6 @@ app.MainController = function($scope, $timeout, mapboxURL, ngeoFeatureOverlayMgr
   this.zoom = 8;
   this.fetchedPage = 0;
 
-  this.trackSource = new ol.source.Vector({
-    features: []
-  });
-
   this.view = new ol.View({
     center: ol.proj.transform(
       this.center, 'EPSG:4326', 'EPSG:3857'
@@ -135,49 +141,6 @@ app.MainController = function($scope, $timeout, mapboxURL, ngeoFeatureOverlayMgr
     zoom: this.zoom,
     maxZoom: 20
   });
-
-  this.trackStyleFunction = function(feature, resolution) {
-    var multiLineString = /** @type{ol.geom.MultiLineString} */
- 		(feature.getGeometry());  
-    var styles = [
-      new ol.style.Style({
-        stroke: new ol.style.Stroke({
-          color: "rgba(255,51,51,1)",
-          width: 2
-        })
-      })          
-    ];            
-
-    var lineStrings = multiLineString.getLineStrings();
-    lineStrings.forEach(function(lineString) {
-      var len_tot = 0;  
-      lineString.forEachSegment(function(start, end) {
-        var dx = end[0] - start[0];
-        var dy = end[1] - start[1];
-        var len = Math.sqrt(dy*dy + dx*dx) / resolution;
-        len_tot += len;
-        if (len_tot > 100) {
-          len_tot = 0;
-          var rotation = Math.atan2(dy, dx);
-          // arrows
-          styles.push(new ol.style.Style({
-            geometry: new ol.geom.Point(end),
-            text: new ol.style.Text({
-              text: '\uf0da',
-              font: 'normal 20px FontAwesome',
-              textBaseline: 'middle',
-              // offsetY: -1,
-              rotation: -rotation,
-              fill: new ol.style.Fill({
-          	    color: "rgba(255,51,51,1)"
-              })
-            })  
-          }));
-        }
-      });    
-    });
-    return styles;
-  };
 
   /**
    * @type {ol.Map}
@@ -191,11 +154,6 @@ app.MainController = function($scope, $timeout, mapboxURL, ngeoFeatureOverlayMgr
           url: mapboxURL
         })
       }),
-      new ol.layer.Vector({
-        name: 'track',  
-        source: this.trackSource,
-        style: this.trackStyleFunction 
-      })
     ],  
     view: this.view
   });
@@ -238,23 +196,9 @@ app.MainController.prototype.hoverFunction = function() {
   return (    
     function(ogc_fid) {
       this.trackFidSelected = ogc_fid;
-      var map = /** @type {ol.Map} */ (this.map);
-      var trackSource = /** @type {ol.source.Vector} */ (this.trackSource);
-      var geojsonFormat = new ol.format.GeoJSON();
-      this.unterwegsTrack_.getTrack(ogc_fid).
-      then(function(geoJSON){
-        var feature = /** @type {ol.Feature} */ 
-            (geojsonFormat.readFeature(geoJSON));
-        trackSource.clear(true);        
-        trackSource.addFeature(feature);
-        var featureGeometry = /** @type {ol.geom.SimpleGeometry} */
-            (feature.getGeometry());
-        var mapSize = /** @type {ol.Size} */ (map.getSize());
-        map.getView().fit(
-          featureGeometry, mapSize,
-          /** @type {olx.view.FitOptions} */ ({maxZoom: 16}));
-        this.profileLine = /** @type {ol.geom.LineString} */ (feature.getGeometry());
-      }.bind(this));
+      this.unterwegsTrackline_.draw(ogc_fid, this.map).then(function(linestring){
+        this.profileLine = linestring;
+      });  
     }.bind(this));  
 };
 
@@ -276,6 +220,8 @@ app.MainController.prototype.clickFunction = function() {
  * @export
  */
 app.MainController.prototype.pageChanged = function() {
+    // timeout necessary because pageChanged fires before 
+    // page is updated
     this.timeout_(function() {
       if (this.page !== this.fetchedPage) {
         this.updateList();

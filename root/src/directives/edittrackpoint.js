@@ -120,7 +120,7 @@ unterwegs.EdittrackpointController = function($scope, ngeoFeatureOverlayMgr,
     })
   });
 
-  this.trackpointOverlay_.setStyle(trackpointStyle);
+this.trackpointOverlay_.setStyle(trackpointStyle);
 
   // Watch the active value to activate/deactive events listening.
   $scope.$watch(

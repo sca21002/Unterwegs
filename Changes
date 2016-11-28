@@ -2,6 +2,8 @@ This file documents the revision history for Perl web application Unterwegs.
 
 {{$NEXT}}
 
+    - Move show trackline on map into a service
+
 0.017     2016-11-27 17:03:02+01:00 Europe/Berlin
 
     - Move track list into a directive
