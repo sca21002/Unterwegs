@@ -20,9 +20,8 @@ unterwegs.profileDirective = function() {
     bindToController: {
       'profileType': '=unterwegsProfileType',
       'getMapFn':    '&?unterwegsProfileMap',
-      'line':        '=unterwegsprofileLine',  
+      'line':        '=unterwegsProfileLine',  
       'trackFid':    '=unterwegsTrackFid',
-      'trackSource': '=unterwegsTrackSource'    
     },
     controller: 'UnterwegsProfileController',
     controllerAs: 'ctrl',
@@ -85,6 +84,13 @@ unterwegs.ProfileController = function($scope, ngeoFeatureOverlayMgr,
   this.profileData = [];
 
   /**
+   * Distance to highlight on the profile. (Property used in ngeo.Profile.)
+   * @type {number}
+   * @export
+   */
+  this.profileHighlight = -1;
+
+  /**
    * @type {Object}
    * @private
   */
@@ -129,23 +135,10 @@ unterwegs.ProfileController = function($scope, ngeoFeatureOverlayMgr,
   this.line;
 
   /**
-   * @type {ol.source.Vector}
-   * @export
-   */
-  this.trackSource;
-
-
-  /**
    * @type {ngeo.FeatureOverlay}
    * @private
    */
   this.pointHoverOverlay_ = ngeoFeatureOverlayMgr.getFeatureOverlay();
-
-  /**
-   * @type {ol.EventsKey}
-   * @private
-   */
-  this.pointerMoveKey_;
 
   /**
    * @type {ol.Feature}
@@ -204,7 +197,8 @@ unterwegs.ProfileController.prototype.getData_ = function() {
         });       
       }
       this.profileData = data;
-      this.linesConfiguration_['line1']['zExtractor'] = this.getZFactory_(this.keyMap_[this.profileType]);
+      this.linesConfiguration_['line1']['zExtractor'] 
+        = this.getZFactory_(this.keyMap_[this.profileType]);
     }.bind(this));  
 
   }      
@@ -262,14 +256,11 @@ unterwegs.ProfileController.prototype.getDist_ = function(item) {
  * @private
  */
 unterwegs.ProfileController.prototype.onPointerMove_ = function(evt) {
-  if (evt.dragging || !this.trackSource) {
+  if (evt.dragging || !this.line) {
     return;
   }
   var coordinate = this.map_.getEventCoordinate(evt.originalEvent);
-  var multiLineString = /** @type{ol.geom.MultiLineString} */
-      (this.trackSource.getFeatures()[0].getGeometry());
-  var line = multiLineString.getLineString(0);
-  var closestPoint = line.getClosestPoint(coordinate);
+  var closestPoint = this.line.getClosestPoint(coordinate);
   // compute distance to line in pixels
   var eventToLine = new ol.geom.LineString([closestPoint, coordinate]);
   var pixelDist = eventToLine.getLength() / this.map_.getView().getResolution();

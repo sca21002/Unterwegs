@@ -3,16 +3,13 @@ goog.provide('unterwegs.ListController');
 
 goog.require('unterwegs');
 goog.require('unterwegs.Calculation');
+goog.require('unterwegs.Track');
 
 
 unterwegs.listDirective = function() {
   return {
     bindToController: {
-      'tracks':      '=unterwegsListTracks',    
-      'page':        '=unterwegsListPage',
-      'totalTracks': '=unterwegsListTotaltracks',
-      'numPages':    '=unterwegsListNumpages',
-      'pageChngd': '&unterwegsListPagechanged',   
+      'changed':     '=unterwegsListChanged',  
       'hoverFn':     '&unterwegsListHover',    
       'clickFn':     '&unterwegsListClick'
     },
@@ -31,13 +28,14 @@ unterwegs.module.directive(
 /**
  * @param {angular.Scope} $scope Angular scope.
  * @param {unterwegs.Calculation} unterwegsCalculation service
+ * @param {unterwegs.Track} unterwegsTrack service
  * @constructor
  * @export
  * @ngInject
  * @ngdoc Controller
  * @ngname UnterwegsListController
  */
-unterwegs.ListController = function($scope, unterwegsCalculation) {
+unterwegs.ListController = function($scope, unterwegsCalculation, unterwegsTrack) {
 
   /**
    * @type {angular.Scope}
@@ -52,6 +50,20 @@ unterwegs.ListController = function($scope, unterwegsCalculation) {
    */
   this.unterwegsCalculation = unterwegsCalculation;
 
+  /**
+   * Track service
+   * @type {unterwegs.Track}  
+   * @private
+   */
+  this.unterwegsTrack_ = unterwegsTrack;
+
+
+  /**
+   * @type {boolean}
+   * @export
+   */
+  this.changed;
+            
    /**
     *  @type {Array.<Object>}
     *  @export
@@ -77,11 +89,6 @@ unterwegs.ListController = function($scope, unterwegsCalculation) {
   this.numPages;
 
   /**
-   * @export
-   */
-  this.pageChngd;
-
-  /**
    * @return {function(number)} A function 
    * @export
    */
@@ -103,14 +110,40 @@ unterwegs.ListController = function($scope, unterwegsCalculation) {
    */
   this.click = this.clickFn();
 
+  // Watch the changed boolean
+  $scope.$watch(
+    function() {
+      return this.changed;
+    }.bind(this),
+    function(newValue) {
+      if (newValue === true) {
+        console.log('changed is true');    
+        this.updateList_();
+      }
+    }.bind(this));
 };
+
 
 /**
  * @export
  */ 
 unterwegs.ListController.prototype.pageChanged = function() {
-    this.pageChngd();
+    console.log('In pageChanged, Seite: ', this.page);
+    this.updateList_();
 };
+
+/**
+ * @private
+ */ 
+unterwegs.ListController.prototype.updateList_ = function() {
+    this.unterwegsTrack_.getList(this.page).then(function(data){
+      this.tracks = data.tracks;
+      this.page = data.page;
+      this.totalTracks = data["tracks_total"];
+      this.changed = false;
+    }.bind(this));
+}; 
+
 
 unterwegs.module.controller(
   'UnterwegsListController', unterwegs.ListController);

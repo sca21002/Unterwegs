@@ -1,8 +1,4 @@
 goog.provide('app.MainController');
-  this.trackSource = new ol.source.Vector({
-    features: []
-  });
-
 
 goog.require('unterwegs');
 goog.require('ngeo.FeatureOverlayMgr');
@@ -16,7 +12,6 @@ goog.require('ngeo.mapDirective');
 goog.require('ngeo.modalDirective');
 goog.require('ol.layer.Tile');
 goog.require('ol.Map');
-goog.require('ol.source.Vector');
 goog.require('ol.source.XYZ');
 goog.require('ol.View');
 /** @suppress {extraRequire} */
@@ -29,16 +24,15 @@ goog.require('unterwegs.listDirective');
 goog.require('unterwegs.panelDirective');
 /** @suppress {extraRequire} */
 goog.require('unterwegs.profileDirective');
-goog.require('unterwegs.Track');
 goog.require('unterwegs.Trackline');
 /** @suppress {extraRequire} */
 goog.require('unterwegs.travelModeDirective');
 
 /** @type {!angular.Module} **/
-app.module = angular.module('unterwegsApp', [unterwegs.module.name, 'ui.bootstrap']);
+app.module = angular.module('unterwegsApp', 
+  [unterwegs.module.name, 'ui.bootstrap']);
 
-app.module.constant('unterwegsServerURL', 
-        'http://localhost:8888/');
+app.module.constant('unterwegsServerURL', 'http://localhost:8888/');
 
 app.module.constant('mapboxURL', 'https://api.mapbox.com/styles/v1/' +
   'mapbox/outdoors-v9/tiles/{z}/{x}/{y}?access_token=' +      
@@ -46,39 +40,16 @@ app.module.constant('mapboxURL', 'https://api.mapbox.com/styles/v1/' +
 
 
 /**
- * @param {angular.Scope} $scope Angular scope.
- * @param {angular.$timeout} $timeout Angular timeout service.
  * @param {string} mapboxURL Url to Mapbox tile service.
  * @param {ngeo.FeatureOverlayMgr} ngeoFeatureOverlayMgr Feature overlay
  *     manager.
- * @param {unterwegs.Track} unterwegsTrack service
  * @param {unterwegs.Trackline} unterwegsTrackline service
  * @constructor
  * @ngInject
  */
-app.MainController = function($scope, $timeout, mapboxURL, 
-  ngeoFeatureOverlayMgr, unterwegsTrack, unterwegsTrackline) {
+app.MainController = function(mapboxURL, ngeoFeatureOverlayMgr, unterwegsTrack,
+  unterwegsTrackline) {
 
-  /**
-   * @type {angular.Scope}
-   * @private
-   */
-  this.scope_ = $scope;
-
-  /**
-   * @type {angular.$timeout}
-   * @private
-   */
-  this.timeout_ = $timeout;
-
-
-  /**
-   * Track service
-   * @type {unterwegs.Track}  
-   * @private
-   */
-  this.unterwegsTrack_ = unterwegsTrack;
-            
   /**
    * Trackline service
    * @type {unterwegs.Trackline}  
@@ -97,6 +68,13 @@ app.MainController = function($scope, $timeout, mapboxURL,
    * @export
    */
   this.editTrackpointActive = false;
+
+
+  /**
+   * @type {boolean}
+   * @export
+   */
+  this.listChanged;
 
 
   /**
@@ -132,7 +110,6 @@ app.MainController = function($scope, $timeout, mapboxURL,
 
   this.center = [10.581, 49.682];
   this.zoom = 8;
-  this.fetchedPage = 0;
 
   this.view = new ol.View({
     center: ol.proj.transform(
@@ -162,29 +139,7 @@ app.MainController = function($scope, $timeout, mapboxURL,
   // Initialize the feature overlay manager with the map.
   ngeoFeatureOverlayMgr.init(this.map);
 
-
-  this.updateList = function() {
-    this.unterwegsTrack_.getList(this.page).then(function(data){
-      /**
-       *  @type {Array.<Object>}
-       *  @export
-      */
-      this.tracks = data.tracks;
-      /**
-       *  @type {number}
-       *  @export
-      */
-      this.page = data.page;
-      /**
-       *  @type {number}
-       *  @export
-      */
-      this.totalTracks = data["tracks_total"];
-      this.fetchedPage = this.page;
-    }.bind(this));
-  }; 
-
-  this.updateList();
+  this.listChanged = true;
 };
 
 
@@ -196,9 +151,10 @@ app.MainController.prototype.hoverFunction = function() {
   return (    
     function(ogc_fid) {
       this.trackFidSelected = ogc_fid;
-      this.unterwegsTrackline_.draw(ogc_fid, this.map).then(function(linestring){
-        this.profileLine = linestring;
-      });  
+      this.unterwegsTrackline_.draw(ogc_fid, this.map)
+      .then(function(multiLineString){
+        this.profileLine = multiLineString.getLineString(0);
+      }.bind(this));  
     }.bind(this));  
 };
 
@@ -214,37 +170,23 @@ app.MainController.prototype.clickFunction = function() {
     }.bind(this));  
 };
 
-
-/**
-/**
- * @export
- */
-app.MainController.prototype.pageChanged = function() {
-    // timeout necessary because pageChanged fires before 
-    // page is updated
-    this.timeout_(function() {
-      if (this.page !== this.fetchedPage) {
-        this.updateList();
-      }
-    }.bind(this), 0);  
-};
-
 /**
  * @export
  */
 app.MainController.prototype.attributeUpdated = function() {
-    this.modalEditAttributeShown = false;
-    this.updateList();
+  this.modalEditAttributeShown = false;
+  this.listChanged = true;
 };
 
 /**
  * @export
  */
 app.MainController.prototype.trackpointDeleted = function() {
-//    this.updateList();
+  // this.listChanged = true;
 };
 
 /**
+ *
  * @export
  */
 app.MainController.prototype.edit = function() {
