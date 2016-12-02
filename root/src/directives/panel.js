@@ -7,14 +7,14 @@ goog.require('unterwegs');
 unterwegs.panelDirective = function() {
   return {
     bindToController: {
-      'panelActionFn': '&unterwegsPanelAction'    
+      'panelActionFn': '&unterwegsPanelAction'
     },
     controller: 'UnterwegsPanelController',
     controllerAs: 'plCtrl',
     templateUrl: unterwegs.baseTemplateUrl + '/panel.html',
     restrict: 'E',
     scope: {}
-  };  
+  };
 };
 
 unterwegs.module.directive(
@@ -30,22 +30,22 @@ unterwegs.module.directive(
  */
 unterwegs.PanelController = function() {
 
-    /**
-     * @type {string}
-     * export
-     */
-    this.active = '';
+  /**
+   * @type {string}
+   * export
+   */
+  this.active = '';
 
-    /**
-     * @return {function(string, string)} A function that triggers actions
-     * @export
-     */
-    this.panelActionFn;
+  /**
+   * @return {function(string, string)} A function that triggers actions
+   * @export
+   */
+  this.panelActionFn;
 
-    /**
-     * @export
-     */ 
-    this.panelAction = this.panelActionFn();
+  /**
+   * @export
+   */
+  this.panelAction = this.panelActionFn();
 };
 
 /**
@@ -54,17 +54,16 @@ unterwegs.PanelController = function() {
  */
 unterwegs.PanelController.prototype.action = function(mode) {
   if (this.active === mode) {
-    this.active = '';    
+    this.active = '';
     this.panelAction(mode, 'off');
   } else {
     if (this.active) {
-      this.panelAction(this.active, 'off');    
-    }  
-    this.active = mode;  
+      this.panelAction(this.active, 'off');
+    }
+    this.active = mode;
     this.panelAction(mode, 'on');
-  }  
-}
-
+  }
+};
 
 
 unterwegs.module.controller(

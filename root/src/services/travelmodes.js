@@ -14,17 +14,17 @@ goog.require('unterwegs');
  */
 unterwegs.TravelModes = function($http, unterwegsServerURL) {
 
-    /**
-    * @type {angular.$http}
-    * @private
-    */
-    this.$http_ = $http;
+  /**
+  * @type {angular.$http}
+  * @private
+  */
+  this.$http_ = $http;
 
-    /**
-    * @type {string}
-    * @private
-    */
-    this.baseURL_ = unterwegsServerURL;
+  /**
+  * @type {string}
+  * @private
+  */
+  this.baseURL_ = unterwegsServerURL;
 };
 
 /**
@@ -33,11 +33,11 @@ unterwegs.TravelModes = function($http, unterwegsServerURL) {
 */
 unterwegs.TravelModes.prototype.getList = function() {
 
-    var url = this.baseURL_ + '/travel_mode/list';
+  var url = this.baseURL_ + '/travel_mode/list';
 
-    return this.$http_.get(url).then(
-        this.handleGetData_.bind(this)
-    );
+  return this.$http_.get(url).then(
+      this.handleGetData_.bind(this)
+  );
 };
 
 /**
@@ -46,7 +46,7 @@ unterwegs.TravelModes.prototype.getList = function() {
  * @private
  */
 unterwegs.TravelModes.prototype.handleGetData_ = function(resp) {
-    return resp.data;
+  return resp.data;
 };
 
 unterwegs.module.service('unterwegsTravelModes', unterwegs.TravelModes);

@@ -29,13 +29,13 @@ goog.require('unterwegs.Trackline');
 goog.require('unterwegs.travelModeDirective');
 
 /** @type {!angular.Module} **/
-app.module = angular.module('unterwegsApp', 
+app.module = angular.module('unterwegsApp',
   [unterwegs.module.name, 'ui.bootstrap']);
 
 app.module.constant('unterwegsServerURL', 'http://localhost:8888/');
 
 app.module.constant('mapboxURL', 'https://api.mapbox.com/styles/v1/' +
-  'mapbox/outdoors-v9/tiles/{z}/{x}/{y}?access_token=' +      
+  'mapbox/outdoors-v9/tiles/{z}/{x}/{y}?access_token=' +
   'pk.eyJ1Ijoic2NhMjEwMDIiLCJhIjoieWRaV0NrcyJ9.g6_31qK3mtTz_6gRrbuUGA');
 
 
@@ -47,16 +47,16 @@ app.module.constant('mapboxURL', 'https://api.mapbox.com/styles/v1/' +
  * @constructor
  * @ngInject
  */
-app.MainController = function(mapboxURL, ngeoFeatureOverlayMgr, unterwegsTrack,
+app.MainController = function(mapboxURL, ngeoFeatureOverlayMgr,
   unterwegsTrackline) {
 
   /**
    * Trackline service
-   * @type {unterwegs.Trackline}  
+   * @type {unterwegs.Trackline}
    * @private
    */
   this.unterwegsTrackline_ = unterwegsTrackline;
-            
+
   /**
    * @type {boolean}
    * @export
@@ -81,7 +81,7 @@ app.MainController = function(mapboxURL, ngeoFeatureOverlayMgr, unterwegsTrack,
    * @type {Object}
    * @export
    */
-  this.track = {}; 
+  this.track = {};
 
   /**
    * @type {number}
@@ -100,7 +100,7 @@ app.MainController = function(mapboxURL, ngeoFeatureOverlayMgr, unterwegsTrack,
    * @type {string|null}
    * @export
    */
-  this.profileType = ''; 
+  this.profileType = '';
 
   /**
    * @type {ol.geom.LineString}
@@ -130,8 +130,8 @@ app.MainController = function(mapboxURL, ngeoFeatureOverlayMgr, unterwegsTrack,
           tileSize: [512, 512],
           url: mapboxURL
         })
-      }),
-    ],  
+      })
+    ],
     view: this.view
   });
 
@@ -148,14 +148,14 @@ app.MainController = function(mapboxURL, ngeoFeatureOverlayMgr, unterwegsTrack,
  * @export
  */
 app.MainController.prototype.hoverFunction = function() {
-  return (    
+  return (
     function(ogc_fid) {
       this.trackFidSelected = ogc_fid;
-      this.unterwegsTrackline_.draw(ogc_fid, this.map)
-      .then(function(multiLineString){
+      this.unterwegsTrackline_.draw(ogc_fid, this.map).then(
+      function(multiLineString) {
         this.profileLine = multiLineString.getLineString(0);
-      }.bind(this));  
-    }.bind(this));  
+      }.bind(this));
+    }.bind(this));
 };
 
 /**
@@ -163,11 +163,11 @@ app.MainController.prototype.hoverFunction = function() {
  * @export
  */
 app.MainController.prototype.clickFunction = function() {
-  return (    
+  return (
     function(track) {
       this.modalEditAttributeShown = true;
       this.track = track;
-    }.bind(this));  
+    }.bind(this));
 };
 
 /**
@@ -193,20 +193,20 @@ app.MainController.prototype.edit = function() {
   this.editTrackpointActive = true;
 };
 
-  
+
 /**
  * @return {function(string, string)} A function that triggers actions
  * @export
  */
 app.MainController.prototype.getPanelActionFunction = function() {
-  return (  
-    function(mode, status) {      
+  return (
+    function(mode, status) {
       if (mode === 'edit') {
-        this.editTrackpointActive = status === 'on';    
+        this.editTrackpointActive = status === 'on';
       } else {
         this.profileType = status === 'on' ? mode : '';
-      } 
-    }.bind(this));  
+      }
+    }.bind(this));
 };
 
 app.module.controller('MainController', app.MainController);

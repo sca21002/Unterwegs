@@ -11,10 +11,10 @@ unterwegs.editattributeDirective = function() {
     restrict: 'E',
     controller: 'UnterwegsEditattributeController',
     scope: {},
-    bindToController: {  
+    bindToController: {
       track:  '=',
       finish: '&'
-    },    
+    },
     controllerAs: 'eaCtrl',
     templateUrl: unterwegs.baseTemplateUrl + '/editattribute.html'
   };
@@ -42,9 +42,8 @@ unterwegs.EditattributeController = function(
    */
   this.track;
 
-  console.log('unterwegs.baseTemplateUrl :', unterwegs.baseTemplateUrl);
 
-  unterwegsTravelModes.getList().then(function(travelModes){
+  unterwegsTravelModes.getList().then(function(travelModes) {
 
     /**
     * @type {Object}
@@ -59,7 +58,7 @@ unterwegs.EditattributeController = function(
  */
 unterwegs.EditattributeController.prototype.updateTrack = function() {
 
-  this.unterwegsTrack.update(this.track).then(function(){
+  this.unterwegsTrack.update(this.track).then(function() {
     this['finish']();
   }.bind(this));
 };

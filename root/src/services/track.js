@@ -15,17 +15,17 @@ goog.require('goog.uri.utils');
  */
 unterwegs.Track = function($http, unterwegsServerURL) {
 
-    /**
-    * @type {angular.$http}
-    * @private
-    */
-    this.http_ = $http;
+  /**
+  * @type {angular.$http}
+  * @private
+  */
+  this.http_ = $http;
 
-    /**
-    * @type {string}
-    * @private
-    */
-    this.baseURL_ = unterwegsServerURL;
+  /**
+  * @type {string}
+  * @private
+  */
+  this.baseURL_ = unterwegsServerURL;
 };
 
 /**
@@ -35,14 +35,15 @@ unterwegs.Track = function($http, unterwegsServerURL) {
 */
 unterwegs.Track.prototype.getList = function(page) {
 
-    var url = goog.uri.utils.appendPath(
-      this.baseURL_, '/track/list'
-    );
-    if (page) { url += '?page=' + page; };
-
-    return this.http_.get(url).then(
-        this.handleGetData_.bind(this)
-    );
+  var url = goog.uri.utils.appendPath(
+    this.baseURL_, '/track/list'
+  );
+  if (page) {
+    url += '?page=' + page;
+  }
+  return this.http_.get(url).then(
+      this.handleGetData_.bind(this)
+  );
 };
 
 /**
@@ -54,12 +55,12 @@ unterwegs.Track.prototype.getTrack = function(ogc_fid) {
 
   var url = goog.uri.utils.appendPath(
     this.baseURL_, '/track/' + ogc_fid
-  ); 
+  );
 
   return this.http_.get(url).then(
     this.handleGetData_.bind(this)
   );
-}
+};
 
 /**
  * @param {number} ogc_fid Feature identifier
@@ -74,7 +75,7 @@ unterwegs.Track.prototype.getTrackPoints = function(ogc_fid) {
   return this.http_.get(url).then(
     this.handleGetData_.bind(this)
   );
-}
+};
 
 /**
  * @param {angular.$http.Response} resp Ajax response.
@@ -82,7 +83,7 @@ unterwegs.Track.prototype.getTrackPoints = function(ogc_fid) {
  * @private
  */
 unterwegs.Track.prototype.handleGetData_ = function(resp) {
-    return resp.data;
+  return resp.data;
 };
 
 /**
@@ -92,14 +93,13 @@ unterwegs.Track.prototype.handleGetData_ = function(resp) {
 */
 unterwegs.Track.prototype.update = function(track) {
 
-  var url = goog.uri.utils.appendPath( 
+  var url = goog.uri.utils.appendPath(
     this.baseURL_, '/track/' + track.ogc_fid + '/update'
   );
 
-  return this.http_.post(url, track, {
-    headers: {'Content-Type': 'application/json' }
-    // withCredentials: true
-  });
+  return this.http_.post(
+    url, track, {headers: {'Content-Type': 'application/json'}}
+  );
 };
 
 unterwegs.module.service('unterwegsTrack', unterwegs.Track);

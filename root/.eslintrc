@@ -1,0 +1,12 @@
+{
+  "extends": "openlayers",
+  "globals": {
+    "angular": false,
+    "app": false,
+    "goog": false,
+    "ngeo": false,
+    "ol": false,
+    "unterwegs": false
+  }      
+}
+        

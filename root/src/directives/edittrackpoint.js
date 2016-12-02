@@ -17,12 +17,12 @@ unterwegs.edittrackpointDirective = function() {
     restrict: 'E',
     controller: 'UnterwegsEdittrackpointController',
     scope: {},
-    bindToController: {  
+    bindToController: {
       'active':   '=unterwegsEdittrackpointActive',
       'trackFid': '=unterwegsEdittrackpointTrackfid',
       'getMapFn': '&unterwegsEdittrackpointMap',
-      'finish':   '&unterwegsEdittrackpointFinish'    
-    },    
+      'finish':   '&unterwegsEdittrackpointFinish'
+    },
     controllerAs: 'etCtrl',
     templateUrl: unterwegs.baseTemplateUrl + '/edittrackpoint.html'
   };
@@ -42,20 +42,20 @@ unterwegs.module.directive(
  * @ngdoc controller
  * @ngname UnterwegsEdittrackpointController
  */
-unterwegs.EdittrackpointController = function($scope, ngeoFeatureOverlayMgr, 
+unterwegs.EdittrackpointController = function($scope, ngeoFeatureOverlayMgr,
   unterwegsTrack, unterwegsTrackpoint) {
 
 
   /**
    * Trackpoint service
-   * @type {unterwegs.Trackpoint}  
+   * @type {unterwegs.Trackpoint}
    * @private
    */
   this.unterwegsTrackpoint_ = unterwegsTrackpoint;
 
   /**
    * Track service
-   * @type {unterwegs.Track}  
+   * @type {unterwegs.Track}
    * @private
    */
   this.unterwegsTrack_ = unterwegsTrack;
@@ -112,15 +112,15 @@ unterwegs.EdittrackpointController = function($scope, ngeoFeatureOverlayMgr,
   var trackpointStyle = new ol.style.Style({
     image: new ol.style.Circle({
       stroke: new ol.style.Stroke({
-          width: 1,
-          color: 'rgba(255,51,51,1)'
+        width: 1,
+        color: 'rgba(255,51,51,1)'
       }),
       radius: 4,
       snapToPixel: false
     })
   });
 
-this.trackpointOverlay_.setStyle(trackpointStyle);
+  this.trackpointOverlay_.setStyle(trackpointStyle);
 
   // Watch the active value to activate/deactive events listening.
   $scope.$watch(
@@ -141,20 +141,20 @@ this.trackpointOverlay_.setStyle(trackpointStyle);
  */
 unterwegs.EdittrackpointController.prototype.getData_ = function() {
   if (this.trackFid && this.active) {
-    var ogc_fid = this.trackFid  
+    var ogc_fid = this.trackFid;
     var geojsonFormat = new ol.format.GeoJSON();
     this.unterwegsTrack_.getTrackPoints(ogc_fid).
-    then(function(geoJSON){
+    then(function(geoJSON) {
       var featureCollection = new ol.Collection();
       this.trackpointOverlay_.setFeatures(featureCollection);
       var features = /** @type {Array.<ol.Feature>} */
           (geojsonFormat.readFeatures(geoJSON));
       features.forEach(function(item) {
-        this.trackpointOverlay_.addFeature(item);      
+        this.trackpointOverlay_.addFeature(item);
       }.bind(this));
-    }.bind(this));    
+    }.bind(this));
   } else {
-    this.trackpointOverlay_.clear();    
+    this.trackpointOverlay_.clear();
   }
 };
 
@@ -163,33 +163,33 @@ unterwegs.EdittrackpointController.prototype.getData_ = function() {
  * @private
  */
 unterwegs.EdittrackpointController.prototype.updateEventsListening_ = function() {
-    
+
   if (this.active && this.trackFid && this.map_ !== null) {
-    console.log('register listener click');  
     this.clickKey_ = ol.events.listen(
       this.map_, ol.events.EventType.CLICK, this.handleMapClick_, this);
   } else {
-    console.log('unregister listener click');  
     ol.Observable.unByKey(this.clickKey_);
   }
 };
 
 
 /**
+ * @param {Event|ol.events.Event} evt Event
  * @private
  */
 unterwegs.EdittrackpointController.prototype.handleMapClick_ = function(evt) {
-  var hit = this.map_.forEachFeatureAtPixel(evt.pixel, function(feature) {
-      this.modalEditTrackPointShown = true;
-      this.trackpoint = feature;
-      this.modalEditTrackPointShown = true;
-      this.$scope_.$apply();
+  // hit = this.map_.forEachFeatureAtPixel(evt.pixel, function(feature) {
+  this.map_.forEachFeatureAtPixel(evt.pixel, function(feature) {
+    this.modalEditTrackPointShown = true;
+    this.trackpoint = feature;
+    this.modalEditTrackPointShown = true;
+    this.$scope_.$apply();
   }, this, function(layer) {
     return layer.get('name') !== 'track';
   });
 };
 
-    
+
 /**
  * @export
  */
@@ -198,7 +198,6 @@ unterwegs.EdittrackpointController.prototype.deleteTrackpoint = function() {
 //  this.unterwegsTrackpoint_.delete(this.trackpoint.get('ogc_fid')).then(function(){
 //    this['finish']();
 //  }.bind(this));
-  console.log('Delete Point deactivated');
   this.modalEditTrackPointShown = false;
 };
 

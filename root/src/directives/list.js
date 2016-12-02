@@ -9,8 +9,8 @@ goog.require('unterwegs.Track');
 unterwegs.listDirective = function() {
   return {
     bindToController: {
-      'changed':     '=unterwegsListChanged',  
-      'hoverFn':     '&unterwegsListHover',    
+      'changed':     '=unterwegsListChanged',
+      'hoverFn':     '&unterwegsListHover',
       'clickFn':     '&unterwegsListClick'
     },
     controller: 'UnterwegsListController',
@@ -18,7 +18,7 @@ unterwegs.listDirective = function() {
     templateUrl: unterwegs.baseTemplateUrl + '/list.html',
     restrict: 'E',
     scope: {}
-  };  
+  };
 };
 
 unterwegs.module.directive(
@@ -45,14 +45,14 @@ unterwegs.ListController = function($scope, unterwegsCalculation, unterwegsTrack
 
   /**
    * Calculation service
-   * @type {unterwegs.Calculation}  
+   * @type {unterwegs.Calculation}
    * @export
    */
   this.unterwegsCalculation = unterwegsCalculation;
 
   /**
    * Track service
-   * @type {unterwegs.Track}  
+   * @type {unterwegs.Track}
    * @private
    */
   this.unterwegsTrack_ = unterwegsTrack;
@@ -63,12 +63,12 @@ unterwegs.ListController = function($scope, unterwegsCalculation, unterwegsTrack
    * @export
    */
   this.changed;
-            
+
    /**
     *  @type {Array.<Object>}
     *  @export
    */
-  this.tracks;    
+  this.tracks;
 
   /**
    * @type {number}
@@ -89,7 +89,7 @@ unterwegs.ListController = function($scope, unterwegsCalculation, unterwegsTrack
   this.numPages;
 
   /**
-   * @return {function(number)} A function 
+   * @return {function(number)} A function
    * @export
    */
   this.hoverFn;
@@ -100,7 +100,7 @@ unterwegs.ListController = function($scope, unterwegsCalculation, unterwegsTrack
   this.hover = this.hoverFn();
 
   /**
-   * @return {function(Object)} A function 
+   * @return {function(Object)} A function
    * @export
    */
   this.clickFn;
@@ -117,7 +117,6 @@ unterwegs.ListController = function($scope, unterwegsCalculation, unterwegsTrack
     }.bind(this),
     function(newValue) {
       if (newValue === true) {
-        console.log('changed is true');    
         this.updateList_();
       }
     }.bind(this));
@@ -126,23 +125,22 @@ unterwegs.ListController = function($scope, unterwegsCalculation, unterwegsTrack
 
 /**
  * @export
- */ 
+ */
 unterwegs.ListController.prototype.pageChanged = function() {
-    console.log('In pageChanged, Seite: ', this.page);
-    this.updateList_();
+  this.updateList_();
 };
 
 /**
  * @private
- */ 
+ */
 unterwegs.ListController.prototype.updateList_ = function() {
-    this.unterwegsTrack_.getList(this.page).then(function(data){
-      this.tracks = data.tracks;
-      this.page = data.page;
-      this.totalTracks = data["tracks_total"];
-      this.changed = false;
-    }.bind(this));
-}; 
+  this.unterwegsTrack_.getList(this.page).then(function(data) {
+    this.tracks = data.tracks;
+    this.page = data.page;
+    this.totalTracks = data['tracks_total'];
+    this.changed = false;
+  }.bind(this));
+};
 
 
 unterwegs.module.controller(

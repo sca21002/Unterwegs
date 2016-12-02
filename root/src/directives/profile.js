@@ -20,8 +20,8 @@ unterwegs.profileDirective = function() {
     bindToController: {
       'profileType': '=unterwegsProfileType',
       'getMapFn':    '&?unterwegsProfileMap',
-      'line':        '=unterwegsProfileLine',  
-      'trackFid':    '=unterwegsTrackFid',
+      'line':        '=unterwegsProfileLine',
+      'trackFid':    '=unterwegsTrackFid'
     },
     controller: 'UnterwegsProfileController',
     controllerAs: 'ctrl',
@@ -29,7 +29,7 @@ unterwegs.profileDirective = function() {
     // replace: true,  TODO: check this option
     restrict: 'E',
     scope: {}
-  };  
+  };
 };
 
 unterwegs.module.directive(
@@ -95,10 +95,10 @@ unterwegs.ProfileController = function($scope, ngeoFeatureOverlayMgr,
    * @private
   */
   this.keyMap_ = {
-      'heartrate': 'hr',
-      'elevation': 'ele',
-      'speed': 'speed'
-  };        
+    'heartrate': 'hr',
+    'elevation': 'ele',
+    'speed': 'speed'
+  };
 
   /**
    * @type {Object<string, ngeox.profile.LineConfiguration>}
@@ -107,8 +107,8 @@ unterwegs.ProfileController = function($scope, ngeoFeatureOverlayMgr,
   this.linesConfiguration_ = {
     'line1': {
       style: {},
-      zExtractor: function(){}
-    }      
+      zExtractor: function() {}
+    }
   };
 
   /**
@@ -119,7 +119,7 @@ unterwegs.ProfileController = function($scope, ngeoFeatureOverlayMgr,
     linesConfiguration: this.linesConfiguration_,
     distanceExtractor: this.getDist_,
     hoverCallback: this.hoverCallback_.bind(this),
-    outCallback: this.outCallback_.bind(this),
+    outCallback: this.outCallback_.bind(this)
   });
 
   /**
@@ -146,15 +146,15 @@ unterwegs.ProfileController = function($scope, ngeoFeatureOverlayMgr,
    */
   this.snappedPoint_ = new ol.Feature();
   this.pointHoverOverlay_.addFeature(this.snappedPoint_);
-   
+
   var hoverPointStyle = new ol.style.Style({
     image: new ol.style.Circle({
       stroke: new ol.style.Stroke({
-          width: 2,
-          color: '#f00'
+        width: 2,
+        color: '#f00'
       }),
       fill: new ol.style.Fill({
-        color: "rgba(255,51,51,0.5)"
+        color: 'rgba(255,51,51,0.5)'
       }),
       radius: 5,
       snapToPixel: false
@@ -163,7 +163,7 @@ unterwegs.ProfileController = function($scope, ngeoFeatureOverlayMgr,
 
   this.pointHoverOverlay_.setStyle(hoverPointStyle);
 
-      
+
   // Watch the profileType value
   $scope.$watch(
     function() {
@@ -183,25 +183,25 @@ unterwegs.ProfileController = function($scope, ngeoFeatureOverlayMgr,
  */
 unterwegs.ProfileController.prototype.getData_ = function() {
   if (this.trackFid && this.profileType) {
-    var ogc_fid = this.trackFid;  
+    var ogc_fid = this.trackFid;
     this.unterwegsTrack.getTrackPoints(ogc_fid).
-    then(function(geoJSON){
-      var data = geoJSON.features;  
+    then(function(geoJSON) {
+      var data = geoJSON.features;
       if (this.profileType === 'elevation') {
-        data = data.filter( function(element) {
+        data = data.filter(function(element) {
           if (element['properties']['ele'] < 10) {
-            return false;    
+            return false;
           }  else {
             return true;
-          }   
-        });       
+          }
+        });
       }
       this.profileData = data;
-      this.linesConfiguration_['line1']['zExtractor'] 
+      this.linesConfiguration_['line1']['zExtractor']
         = this.getZFactory_(this.keyMap_[this.profileType]);
-    }.bind(this));  
+    }.bind(this));
 
-  }      
+  }
 };
 
 /**
@@ -231,9 +231,9 @@ unterwegs.ProfileController.prototype.getZFactory_ = function(key) {
    */
   var getZFn = function(item) {
     if ('properties' in item && key in item['properties']) {
-      return parseFloat(item['properties'][key]); 
-    } 
-    return 0; 
+      return parseFloat(item['properties'][key]);
+    }
+    return 0;
   };
   return getZFn;
 };
@@ -241,6 +241,7 @@ unterwegs.ProfileController.prototype.getZFactory_ = function(key) {
 /**
  * Extractor for the 'dist' value in profileData.
  * @param {Object} item The item.
+ * @return {number} distance
  * @private
  */
 unterwegs.ProfileController.prototype.getDist_ = function(item) {
@@ -278,6 +279,7 @@ unterwegs.ProfileController.prototype.onPointerMove_ = function(evt) {
 
 /**
  * @param {ol.Coordinate} point Point
+ * @return {number} distance
  * @private
  */
 unterwegs.ProfileController.prototype.getDistanceFromData_ = function(point) {
@@ -291,7 +293,7 @@ unterwegs.ProfileController.prototype.getDistanceFromData_ = function(point) {
     return ol.extent.containsCoordinate(fakeExtent, item.geometry.coordinates);
   });
   return found && this.getDist_(found);
-}
+};
 
 
 /**

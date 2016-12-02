@@ -15,17 +15,17 @@ goog.require('goog.uri.utils');
  */
 unterwegs.Trackpoint = function($http, unterwegsServerURL) {
 
-    /**
-    * @type {angular.$http}
-    * @private
-    */
-    this.http_ = $http;
+  /**
+  * @type {angular.$http}
+  * @private
+  */
+  this.http_ = $http;
 
-    /**
-    * @type {string}
-    * @private
-    */
-    this.baseURL_ = unterwegsServerURL;
+  /**
+  * @type {string}
+  * @private
+  */
+  this.baseURL_ = unterwegsServerURL;
 };
 
 /**
@@ -37,13 +37,12 @@ unterwegs.Trackpoint.prototype.delete = function(ogc_fid) {
 
   var url = goog.uri.utils.appendPath(
     this.baseURL_, '/trackpoint/' + ogc_fid + '/delete'
-  ); 
+  );
 
   return this.http_.get(url).then(
    function() {
-       console.log('Deleted!');
-   } 
+   }
   );
-}
+};
 
 unterwegs.module.service('unterwegsTrackpoint', unterwegs.Trackpoint);
