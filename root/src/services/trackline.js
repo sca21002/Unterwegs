@@ -85,7 +85,7 @@ unterwegs.Trackline = function(ngeoFeatureOverlayMgr, unterwegsTrack) {
 /**
  * @param {number} ogc_fid Track Id
  * @param {ol.Map} map Map
- * @return {ol.geom.LineString} Profile line
+ * @return {angular.$q.Promise} Promise.
  * @export
  */
 unterwegs.Trackline.prototype.draw = function(ogc_fid, map) {

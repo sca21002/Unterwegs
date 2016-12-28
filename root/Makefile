@@ -68,6 +68,7 @@ serve: .build/node_modules.timestamp $(FONTAWESOME_WEBFONT)
 		--var 'src=app/**/*.js' \
 		--var src_set=contribs_unterwegs \
 		--var generate_exports=true \
+		--var ngeo_folder=node_modules/ngeo/ \
 		--var source_map=build/$*.js.map $< > $@
 
 .PRECIOUS: node_modules/font-awesome/fonts/fontawesome-webfont.%

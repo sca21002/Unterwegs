@@ -279,7 +279,7 @@ unterwegs.ProfileController.prototype.onPointerMove_ = function(evt) {
 
 /**
  * @param {ol.Coordinate} point Point
- * @return {number} distance
+ * @return {null|number|undefined} distance
  * @private
  */
 unterwegs.ProfileController.prototype.getDistanceFromData_ = function(point) {

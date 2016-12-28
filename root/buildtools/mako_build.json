@@ -78,19 +78,17 @@ _ngeo_folder = '' if ngeo_folder is UNDEFINED else ngeo_folder
       "node_modules/openlayers/externs/olx.js",
       "node_modules/openlayers/externs/oli.js",
 % if src_set == 'contribs_gmf':
-      "${_ngeo_folder}contribs/gmf/externs/gmfx.js",
+      "${_ngeo_folder}contribs/gmf/options/gmfx.js",
       "${_ngeo_folder}contribs/gmf/externs/gmf-themes.js",
 % elif src_set == 'contribs_unterwegs':
       
 % endif
       "externs/unterwegsx.js",
-      "node_modules/ngeo/externs/ngeox.js",
-      "node_modules/ngeo/externs/mapfish-print-v3.js"
+      "${_ngeo_folder}options/ngeox.js",
+      "${_ngeo_folder}externs/mapfish-print-v3.js"
     ],
     "define": [
-      "goog.dom.ASSUME_STANDARDS_MODE=true",
-      "goog.DEBUG=false",
-      "ol.ENABLE_DOM=false",
+      "ol.DEBUG=false",
       "ol.ENABLE_WEBGL=false"
     ],
     "jscomp_error": [
