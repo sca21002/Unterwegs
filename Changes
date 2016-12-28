@@ -2,6 +2,10 @@ This file documents the revision history for Perl web application Unterwegs.
 
 {{$NEXT}}
 
+    - Change package.json to fixed versions
+    - Add tour_id in track attribute form
+    - Update SQL-Script following gpx import 
+
 0.019     2016-12-01 20:06:33+01:00 Europe/Berlin
 
     - Move update list into list directive
