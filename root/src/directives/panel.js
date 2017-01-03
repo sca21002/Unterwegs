@@ -60,7 +60,9 @@ unterwegs.PanelController.prototype.action = function(mode) {
     if (this.active) {
       this.panelAction(this.active, 'off');
     }
-    this.active = mode;
+    if (mode !== 'laptime') {
+      this.active = mode;
+    }  
     this.panelAction(mode, 'on');
   }
 };

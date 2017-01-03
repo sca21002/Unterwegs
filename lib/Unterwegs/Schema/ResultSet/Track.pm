@@ -14,31 +14,6 @@ use Unterwegs::Geo::JSON::FeatureCollection;
  
 sub BUILDARGS { $_[2] }
  
-sub search_with_len {
-    my $self = shift;
-    my $cond = shift || {};
-    my $page = shift || 1;
-    my $entries_per_page = shift || 10;  
-
-    warn "Page: $page entries er page: $entries_per_page";
-
-    return $self->search(
-        $cond,
-        {   
-            'select' => [ 
-                qw(ogc_fid name cmt desc src number type tour_id),
-                \'Round((ST_Length(Geography(wkb_geometry))/1000)::numeric,3)',
-            ],
-            'as'     => [ 
-                qw(ogc_fid name cmt desc src number type tour_id),
-                'len', 
-            ],      
-            page => $page,
-            rows => $entries_per_page,
-        },
-    );
-}
-
 sub search_with_geojson_geometry {
     my $self = shift;
     my $cond = shift || {};

@@ -19,6 +19,8 @@ goog.require('unterwegs.editattributeDirective');
 /** @suppress {extraRequire} */
 goog.require('unterwegs.edittrackpointDirective');
 /** @suppress {extraRequire} */
+goog.require('unterwegs.laptimeDirective');
+/** @suppress {extraRequire} */
 goog.require('unterwegs.listDirective');
 /** @suppress {extraRequire} */
 goog.require('unterwegs.panelDirective');
@@ -69,6 +71,11 @@ app.MainController = function(mapboxURL, ngeoFeatureOverlayMgr,
    */
   this.editTrackpointActive = false;
 
+  /**
+   * @type {boolean}
+   * @export
+   */
+  this.laptimeActive = false;
 
   /**
    * @type {boolean}
@@ -83,11 +90,11 @@ app.MainController = function(mapboxURL, ngeoFeatureOverlayMgr,
    */
   this.track = {};
 
-  /**
-   * @type {number}
-   * @export
-   */
-  this.trackFidSelected;
+//  /**
+//   * @type {number}
+//   * @export
+//   */
+//  this.trackFidSelected;
 
   /**
    * @type {boolean}
@@ -149,9 +156,9 @@ app.MainController = function(mapboxURL, ngeoFeatureOverlayMgr,
  */
 app.MainController.prototype.hoverFunction = function() {
   return (
-    function(ogc_fid) {
-      this.trackFidSelected = ogc_fid;
-      this.unterwegsTrackline_.draw(ogc_fid, this.map).then(
+    function(track) {
+      this.track = track;
+      this.unterwegsTrackline_.draw(track.ogc_fid, this.map).then(
       function(multiLineString) {
         this.profileLine = multiLineString.getLineString(0);
       }.bind(this));
@@ -203,6 +210,8 @@ app.MainController.prototype.getPanelActionFunction = function() {
     function(mode, status) {
       if (mode === 'edit') {
         this.editTrackpointActive = status === 'on';
+      } else if (mode === 'laptime') {
+        this.laptimeActive = status === 'on';
       } else {
         this.profileType = status === 'on' ? mode : '';
       }

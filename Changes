@@ -2,6 +2,8 @@ This file documents the revision history for Perl web application Unterwegs.
 
 {{$NEXT}}
 
+    - Add a modal for laptimes
+
 0.020     2016-12-28 18:49:59+01:00 Europe/Berlin
 
     - Change package.json to fixed versions

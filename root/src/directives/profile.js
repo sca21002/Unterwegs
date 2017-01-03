@@ -21,7 +21,7 @@ unterwegs.profileDirective = function() {
       'profileType': '=unterwegsProfileType',
       'getMapFn':    '&?unterwegsProfileMap',
       'line':        '=unterwegsProfileLine',
-      'trackFid':    '=unterwegsTrackFid'
+      'track':       '=unterwegsProfileTrack'
     },
     controller: 'UnterwegsProfileController',
     controllerAs: 'ctrl',
@@ -141,6 +141,12 @@ unterwegs.ProfileController = function($scope, ngeoFeatureOverlayMgr,
   this.pointHoverOverlay_ = ngeoFeatureOverlayMgr.getFeatureOverlay();
 
   /**
+   * @type {unterwegsx.Track}
+   * @export
+   */
+  this.track;
+
+  /**
    * @type {ol.Feature}
    * @private
    */
@@ -182,8 +188,8 @@ unterwegs.ProfileController = function($scope, ngeoFeatureOverlayMgr,
   @private
  */
 unterwegs.ProfileController.prototype.getData_ = function() {
-  if (this.trackFid && this.profileType) {
-    var ogc_fid = this.trackFid;
+  if (this.track && this.profileType) {
+    var ogc_fid = this.track.ogc_fid;
     this.unterwegsTrack.getTrackPoints(ogc_fid).
     then(function(geoJSON) {
       var data = geoJSON.features;
@@ -208,7 +214,7 @@ unterwegs.ProfileController.prototype.getData_ = function() {
  * @private
  */
 unterwegs.ProfileController.prototype.updateEventsListening_ = function() {
-  if (this.profileType && this.trackFid && this.map_ !== null) {
+  if (this.profileType && this.track && this.map_ !== null) {
     this.pointerMoveKey_ = ol.events.listen(this.map_, 'pointermove',
         this.onPointerMove_.bind(this));
   } else {

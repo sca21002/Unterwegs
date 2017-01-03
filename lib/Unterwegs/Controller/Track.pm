@@ -44,11 +44,11 @@ sub list : Chained('tracks') PathPart('list') Args(0) {
         {   
             select => [ qw( 
                 ogc_fid name cmt desc src number tour_id file start end
-                duration len avg_speed travel_mode_id travel_mode.icon
+                duration len avg_speed travel_mode_id travel_mode.icon avg_hr
             ) ],
             as     => [ qw( 
                 ogc_fid name cmt desc src number tour_id file start end
-                duration len avg_speed travel_mode_id icon
+                duration len avg_speed travel_mode_id icon avg_hr
             ) ],
             join     => 'travel_mode',
             page     => $page,
@@ -149,6 +149,25 @@ sub update : Chained('track') PathPart('update') Args(0) {
     
     $c->response->body('ok');
 } 
+
+sub laptime : Chained('track') PathPart('laptime') Args(0) {
+    my ($self, $c) = @_;
+
+       my $ogc_fid = $c->stash->{ogc_fid};
+    
+        my @res = $c->model('UnterwegsDB::LapTime')->get_laptime($ogc_fid)->search(
+            {},
+            {result_class => 'DBIx::Class::ResultClass::HashRefInflator'}
+        )->all;
+    
+    my $response;
+    $response->{laptime} = [@res];
+
+    $c->stash(
+        %$response,
+        current_view => 'JSON_LT'
+    );
+}
 
 =encoding utf8
 

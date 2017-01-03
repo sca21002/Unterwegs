@@ -177,6 +177,11 @@ __PACKAGE__->table("tracks");
   is_nullable: 1
   size: 1
 
+=head2 avg_hr
+
+  data_type: 'integer'
+  is_nullable: 1
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -281,6 +286,8 @@ __PACKAGE__->add_columns(
   { data_type => "timestamp with time zone", is_nullable => 1 },
   "duration_hr",
   { data_type => "interval", is_nullable => 1, size => 1 },
+  "avg_hr",
+  { data_type => "integer", is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -353,8 +360,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07045 @ 2016-10-31 22:29:51
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:E7N0DPCs6ZKR9cAo+sI/aA
+# Created by DBIx::Class::Schema::Loader v0.07046 @ 2017-01-03 15:18:13
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:2RdILZJoInx8/vbylpfu+w
 
 use DateTime::Format::Pg;
 use Geo::JSON;

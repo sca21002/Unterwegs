@@ -18,11 +18,15 @@
           finish="ctrl.attributeUpdated()" />
       </ngeo-modal>
       <div>
+      <unterwegs-laptime 
+        unterwegs-laptime-active="ctrl.laptimeActive"
+        unterwegs-laptime-track="ctrl.track" />
+      </div>
+      <div>
       <unterwegs-edittrackpoint
         unterwegs-edittrackpoint-active="ctrl.editTrackpointActive"
-        unterwegs-edittrackpoint-fid="ctrl.trackFidSelected"
         unterwegs-edittrackpoint-map="ctrl.map"
-        unterwegs-edittrackpoint-trackfid="ctrl.trackFidSelected"
+        unterwegs-edittrackpoint-track="ctrl.track"
         unterwegs-edittrackpoint-finish="ctrl.trackpointDeleted()" /> 
       </div>    
       <div class="container-fluid">
@@ -35,7 +39,7 @@
                 unterwegs-profile-type="ctrl.profileType"
                 unterwegs-profile-line="ctrl.profileLine"
                 unterwegs-profile-map="ctrl.map"
-                unterwegs-track-fid="ctrl.trackFidSelected" />
+                unterwegs-profile-track="ctrl.track" />
             </div>
           </div>
           <div class="col-md-5">

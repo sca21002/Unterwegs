@@ -17,6 +17,11 @@
    ng-click="plCtrl.action('speed')">    
   network_check   
 </i>  
+<i class="material-icons md-14"
+   ng-class="{'unterwegs-panel-active': plCtrl.active === 'laptime'}"
+   ng-click="plCtrl.action('laptime')">    
+  list
+</i>  
 <div
   ng-show="plCtrl.loading"
   class="unterwegs-panel-loading">

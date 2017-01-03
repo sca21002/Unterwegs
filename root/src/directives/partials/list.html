@@ -15,7 +15,7 @@
   </tfoot>    
   <tbody>
     <tr ng-repeat="track in ltCtrl.tracks" 
-        ng-mouseenter="ltCtrl.hover(track.ogc_fid)"
+        ng-mouseenter="ltCtrl.hover(track)"
         ng-click="ltCtrl.click(track)">
       <td>
         <div>{{track.name}} ({{track.file}})

@@ -19,7 +19,7 @@ unterwegs.edittrackpointDirective = function() {
     scope: {},
     bindToController: {
       'active':   '=unterwegsEdittrackpointActive',
-      'trackFid': '=unterwegsEdittrackpointTrackfid',
+      'track': '=unterwegsEdittrackpointTrack',
       'getMapFn': '&unterwegsEdittrackpointMap',
       'finish':   '&unterwegsEdittrackpointFinish'
     },
@@ -67,10 +67,10 @@ unterwegs.EdittrackpointController = function($scope, ngeoFeatureOverlayMgr,
   this.$scope_ = $scope;
 
   /**
-   * @type {number}
+   * @type {unterwegsx.Track}
    * @export
    */
-  this.trackFid;
+  this.track;
 
   /**
    * @type {Object}
@@ -140,8 +140,8 @@ unterwegs.EdittrackpointController = function($scope, ngeoFeatureOverlayMgr,
   @private
  */
 unterwegs.EdittrackpointController.prototype.getData_ = function() {
-  if (this.trackFid && this.active) {
-    var ogc_fid = this.trackFid;
+  if (this.track && this.active) {
+    var ogc_fid = this.track.ogc_fid;
     var geojsonFormat = new ol.format.GeoJSON();
     this.unterwegsTrack_.getTrackPoints(ogc_fid).
     then(function(geoJSON) {
@@ -164,7 +164,7 @@ unterwegs.EdittrackpointController.prototype.getData_ = function() {
  */
 unterwegs.EdittrackpointController.prototype.updateEventsListening_ = function() {
 
-  if (this.active && this.trackFid && this.map_ !== null) {
+  if (this.active && this.track && this.map_ !== null) {
     this.clickKey_ = ol.events.listen(
       this.map_, ol.events.EventType.CLICK, this.handleMapClick_, this);
   } else {

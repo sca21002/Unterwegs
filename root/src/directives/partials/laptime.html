@@ -1,0 +1,32 @@
+<ngeo-modal ng-model="lpCtrl.active"
+  ngeo-modal-destroy-content-on-hide="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <h4 class="modal-title" id="myModalLabel">{{lpCtrl.track.name}} ({{lpCtrl.track.file}})</h4>
+  </div>
+  <div class="modal-body">
+    <table class="table table-condensed table-striped table-bordered">
+      <thead class="thead-default">
+        <th class="text-center">Runde</th>
+        <th class="text-center">Distanz</th>
+        <th class="text-center">Pace</th>
+        <th class="text-center">Herzfrequenz</th>
+      </thead> 
+      <tfoot></tfoot>
+      <tbody>
+        <tr ng-repeat="laptime in lpCtrl.laptimes"> 
+            <td class="text-right">{{laptime.rnd}}</td>
+            <td class="text-right">{{laptime.dist}}</td>
+            <td class="text-right">{{laptime.pace}}</td>
+            <td class="text-right">{{laptime.hr}}</td>
+        </tr>    
+        <tr> 
+            <td class="text-right track-total">gesamt</td>
+            <td class="text-right track-total">{{lpCtrl.track.len}}</td>
+            <td class="text-right track-total">{{lpCtrl.unterwegsCalculation.velocityInMinPerKm(lpCtrl.track.avg_speed)}}</td>
+            <td class="text-right track-total">{{lpCtrl.track.avg_hr}}</td>
+        </tr>
+      </tbody>    
+    </table>
+  </div>
+</ngeo-modal>    

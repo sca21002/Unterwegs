@@ -20,6 +20,14 @@ UPDATE tracks SET start = sq.start, "end" = sq.end FROM (
 WHERE tracks.ogc_fid = sq.track_id AND tracks.start is NULL;
 
 
+--- Set avg_hr
+
+UPDATE tracks SET avg_hr = sq.avg_hr FROM (
+    SELECT ROUND(avg(hr)) AS avg_hr, track_id FROM track_points GROUP BY track_id
+) AS sq 
+WHERE tracks.ogc_fid = sq.track_id AND tracks.avg_hr is NULL;
+
+
 --- Set duration of track
 
 update tracks set duration = "end" - start WHERE duration is NULL;

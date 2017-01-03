@@ -26,7 +26,11 @@ unterwegs.Calculation.prototype.velocityInMinPerKm = function(speed) {
   if (secs.length < 2) {
     secs = '0' + secs;
   }
-  return minutes + ':' + secs;
+  var mins = minutes + '';
+  if (mins.length < 2) {
+    mins = '0' + mins;
+  }
+  return mins + ':' + secs;
 };
 
 
