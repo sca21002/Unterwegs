@@ -97,7 +97,7 @@ unterwegs.ListController = function($scope, unterwegsCalculation, unterwegsTrack
   /**
    * @export
    */
-  this.hover = this.hoverFn();
+  this.hover;
 
   /**
    * @return {function(Object)} A function
@@ -108,7 +108,13 @@ unterwegs.ListController = function($scope, unterwegsCalculation, unterwegsTrack
   /**
    * @export
    */
-  this.click = this.clickFn();
+  this.click;
+
+  //wait until constructor has done its initialization
+  this.$onInit = function() {
+    this.hover = this.hoverFn();
+    this.click = this.clickFn();
+  }
 
   // Watch the changed boolean
   $scope.$watch(
@@ -120,6 +126,7 @@ unterwegs.ListController = function($scope, unterwegsCalculation, unterwegsTrack
         this.updateList_();
       }
     }.bind(this));
+
 };
 
 

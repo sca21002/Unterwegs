@@ -1,11 +1,9 @@
 <%doc>
 lib:            Set to true to create the libraries files (ngeo or gmf)
 src:            An additional source directory, used by app
-src_set:        The used source set (ngeo|contribs_gmf|contribs_unterwegs)
+src_set:        The used source set (contribs_unterwegs)
 examples:       Add the examples files
 entry_point:    The entry point
-js:             An evantual additional js file
-strict:         Set to false to don't do a strict validation
 ngeo_folder:    The folder where ngeo is installed, reqired to use it in the project
 source_map:     The source map destination file
 </%doc>
@@ -18,35 +16,24 @@ _ngeo_folder = '' if ngeo_folder is UNDEFINED else ngeo_folder
 % else:
   "exports": [],
 % endif
+  "cwd": ".",
   "src": [
 % if src is not UNDEFINED:
-    "${src}",
+% for s in src.split(","):
+    "${s}",
+% endfor
 % endif
-% if src_set == 'ngeo':
-% if examples != 'true':
-    ".build/templatecache.js",
-% endif
-% elif src_set == 'contribs_gmf':
-    "${_ngeo_folder}contribs/gmf/src/**/*.js",
-% if examples != 'true':
-    ".build/gmftemplatecache.js",
-% endif
-% elif src_set == 'contribs_unterwegs':
     "src/**/*.js",
     ".build/unterwegstemplatecache.js",
-% endif
     "node_modules/openlayers/src/**/*.js",
     "node_modules/openlayers/build/ol.ext/*.js",
-    "node_modules/ngeo/src/**/*.js"
+    "${_ngeo_folder}src/**/*.js"
   ],
   "compile": {
 % if entry_point:
-    "closure_entry_point": "${entry_point}",
+    "entry_point": "${entry_point}",
 % endif
     "externs": [
-% if examples == 'true':
-      "node_modules/openlayers/externs/example.js",
-%endif
       "node_modules/openlayers/externs/bingmaps.js",
       "node_modules/openlayers/externs/cartodb.js",
       "node_modules/openlayers/externs/closure-compiler.js",
@@ -55,74 +42,52 @@ _ngeo_folder = '' if ngeo_folder is UNDEFINED else ngeo_folder
       "node_modules/openlayers/externs/proj4js.js",
       "node_modules/openlayers/externs/tilejson.js",
       "node_modules/openlayers/externs/topojson.js",
-      "node_modules/ngeo/externs/angular-gettext.js",
-      "node_modules/ngeo/externs/d3.js",
-      "node_modules/ngeo/externs/typeahead.js",
-      "node_modules/ngeo/externs/twbootstrap.js",
-      "node_modules/ngeo/externs/closure-compiler.js",
-      "node_modules/ngeo/externs/jqueryui.js",
-      "node_modules/ngeo/externs/file-saver.js",
+      "${_ngeo_folder}externs/angular-gettext.js",
+      "${_ngeo_folder}externs/d3.js",
+      "${_ngeo_folder}externs/typeahead.js",
+      "${_ngeo_folder}externs/twbootstrap.js",
+      "${_ngeo_folder}externs/closure-compiler.js",
+      "${_ngeo_folder}externs/jqueryui.js",
+      "${_ngeo_folder}externs/file-saver.js",
+      "${_ngeo_folder}externs/geo-admin-api.js",
       ".build/externs/angular-1.5.js",
       ".build/externs/angular-1.5-q_templated.js",
       ".build/externs/angular-1.5-http-promise_templated.js",
-      ".build/externs/jquery-1.9.js"
-% if lib != "true":
-    ],
+      ".build/externs/jquery-1.9.js",
+      "${_ngeo_folder}externs/mapfish-print-v3.js"
+    ],  
     "js": [
-% else:
-      ,
-% endif
-% if js is not UNDEFINED:
-      "${js}",
-% endif
+      "${_ngeo_folder}options/ngeox.js",
       "node_modules/openlayers/externs/olx.js",
       "node_modules/openlayers/externs/oli.js",
-% if src_set == 'contribs_gmf':
-      "${_ngeo_folder}contribs/gmf/options/gmfx.js",
-      "${_ngeo_folder}contribs/gmf/externs/gmf-themes.js",
-% elif src_set == 'contribs_unterwegs':
-      
-% endif
-      "externs/unterwegsx.js",
-      "${_ngeo_folder}options/ngeox.js",
-      "${_ngeo_folder}externs/mapfish-print-v3.js"
+      "externs/unterwegsx.js"
     ],
     "define": [
-      "ol.DEBUG=false",
       "ol.ENABLE_WEBGL=false"
     ],
     "jscomp_error": [
       "*"
     ],
     "jscomp_off": [
-% if strict == 'false':
-      "extraRequire",
-      "missingProvide",
-% endif
-      "useOfGoogBase",
-      "unnecessaryCasts",
-      "lintChecks",
-      "analyzerChecks"
+      "analyzerChecks",
+      "strictMissingRequire",
+      "lintChecks"
     ],
     "extra_annotation_name": [
       "api", "observable", "ngdoc", "ngname", "htmlAttribute"
     ],
-% if lib == "true" or generate_exports == 'true':
     "generate_exports": true,
-% else:
-    "manage_closure_dependencies": true,
-% endif
 % if source_map is not UNDEFINED:
     "create_source_map": "${source_map}",
     "source_map_format": "V3",
 % endif
-    "language_in": "ECMASCRIPT5_STRICT",
+    "language_in": "ECMASCRIPT6_STRICT",
     "language_out": "ECMASCRIPT5_STRICT",
     "angular_pass": true,
     "compilation_level": "ADVANCED",
+    "output_wrapper": "(function(){%output%}).call(window);",
     "warning_level": "VERBOSE",
     "export_local_property_definitions": true,
-    "output_wrapper": "(function(){%output%}).call(window);",
     "use_types_for_optimization": true
   }
 }

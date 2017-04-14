@@ -58,18 +58,11 @@ unterwegs.ProfileController = function($scope, ngeoFeatureOverlayMgr,
 
   this.unterwegsTrack = unterwegsTrack;
 
-  var map = null;
-  var mapFn = this['getMapFn'];
-  if (mapFn) {
-    map = mapFn();
-    goog.asserts.assertInstanceof(map, ol.Map);
-  }
-
   /**
    * @type {ol.Map}
    * @private
    */
-  this.map_ = map;
+  this.map_;
 
   /**
    * @type {string}
@@ -169,6 +162,16 @@ unterwegs.ProfileController = function($scope, ngeoFeatureOverlayMgr,
 
   this.pointHoverOverlay_.setStyle(hoverPointStyle);
 
+  // wait until constructor has done its initialization
+  this.$onInit = function() {
+    var map = null;
+    var mapFn = this['getMapFn'];
+    if (mapFn) {
+      map = mapFn();
+      goog.asserts.assertInstanceof(map, ol.Map);
+      this.map_ = map;
+    }
+  }
 
   // Watch the profileType value
   $scope.$watch(

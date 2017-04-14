@@ -1,4 +1,5 @@
 goog.provide('app.MainController');
+goog.provide('app_unterwegs');
 
 goog.require('unterwegs');
 goog.require('ngeo.FeatureOverlayMgr');
@@ -146,6 +147,9 @@ app.MainController = function(mapboxURL, ngeoFeatureOverlayMgr,
   // Initialize the feature overlay manager with the map.
   ngeoFeatureOverlayMgr.init(this.map);
 
+  // Initialize the trackline overlay with the map.
+  unterwegsTrackline.init(this.map);
+
   this.listChanged = true;
 };
 
@@ -158,7 +162,7 @@ app.MainController.prototype.hoverFunction = function() {
   return (
     function(track) {
       this.track = track;
-      this.unterwegsTrackline_.draw(track.ogc_fid, this.map).then(
+      this.unterwegsTrackline_.draw(track.ogc_fid).then(
       function(multiLineString) {
         this.profileLine = multiLineString.getLineString(0);
       }.bind(this));

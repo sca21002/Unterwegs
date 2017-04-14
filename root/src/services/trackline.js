@@ -1,6 +1,5 @@
 goog.provide('unterwegs.Trackline');
 
-goog.require('ngeo.FeatureOverlayMgr');
 goog.require('unterwegs');
 goog.require('unterwegs.Track');
 goog.require('ol.format.GeoJSON');
@@ -13,19 +12,18 @@ goog.require('ol.style.Fill');
 
 /**
  * @constructor
- * @param {ngeo.FeatureOverlayMgr} ngeoFeatureOverlayMgr Feature overlay
  * @param {unterwegs.Track} unterwegsTrack service
  * @ngInject
  * @ngdoc service
  * @ngname unterwegsTrackline
 */
-unterwegs.Trackline = function(ngeoFeatureOverlayMgr, unterwegsTrack) {
+unterwegs.Trackline = function(unterwegsTrack) {
 
-    /**
-   * @type {ngeo.FeatureOverlay}
+  /**
+   * @type {ol.Map}
    * @private
    */
-  this.trackOverlay_ = ngeoFeatureOverlayMgr.getFeatureOverlay();
+  this.map_;
 
   /**
    * Track service
@@ -34,7 +32,15 @@ unterwegs.Trackline = function(ngeoFeatureOverlayMgr, unterwegsTrack) {
    */
   this.unterwegsTrack_ = unterwegsTrack;
 
-  var trackStyleFunction = function(feature, resolution) {
+  /**
+   * @type {ol.source.Vector}
+   * @private
+   */
+  this.trackSource_ = new ol.source.Vector({
+    features: []
+  });
+
+  this.trackStyleFunction_ = function(feature, resolution) {
     var multiLineString = /** @type{ol.geom.MultiLineString} */
       (feature.getGeometry());
     var styles = [
@@ -77,33 +83,53 @@ unterwegs.Trackline = function(ngeoFeatureOverlayMgr, unterwegsTrack) {
     return styles;
   };
 
-  this.trackOverlay_.setStyle(trackStyleFunction);
+  /**
+   * @type {ol.layer.Vector}
+   * @private
+   */
+  this.trackLayer_ = new ol.layer.Vector({
+    name: 'trackline',
+    source: this.trackSource_,
+    style: this.trackStyleFunction_,
+    updateWhileAnimating: true,
+    updateWhileInteracting: true
+  });
 
 };
 
 
 /**
  * @param {number} ogc_fid Track Id
- * @param {ol.Map} map Map
  * @return {angular.$q.Promise} Promise.
  * @export
  */
-unterwegs.Trackline.prototype.draw = function(ogc_fid, map) {
+unterwegs.Trackline.prototype.draw = function(ogc_fid) {
   var geojsonFormat = new ol.format.GeoJSON();
   return this.unterwegsTrack_.getTrack(ogc_fid).
   then(function(geoJSON) {
     var feature = /** @type {ol.Feature} */
         (geojsonFormat.readFeature(geoJSON));
-    this.trackOverlay_.clear();
-    this.trackOverlay_.addFeature(feature);
+    this.trackSource_.clear();
+    this.trackSource_.addFeature(feature);
     var featureGeometry = /** @type {ol.geom.SimpleGeometry} */
       (feature.getGeometry());
-    var mapSize = /** @type {ol.Size} */ (map.getSize());
-    map.getView().fit(
-      featureGeometry, mapSize,
-      /** @type {olx.view.FitOptions} */ ({maxZoom: 16}));
+    if (this.map_ !== null) {
+      this.map_.getView().fit(
+        featureGeometry,
+        /** @type {olx.view.FitOptions} */ ({maxZoom: 16}));
+    }  
     return feature.getGeometry();
   }.bind(this));
 };
+
+/**
+ * @param {ol.Map} map Map.
+ * @export
+ */
+unterwegs.Trackline.prototype.init = function(map) {
+  map.addLayer(this.trackLayer_);
+  this.map_ = map;
+};
+
 
 unterwegs.module.service('unterwegsTrackline', unterwegs.Trackline);

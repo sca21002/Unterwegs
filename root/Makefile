@@ -14,7 +14,7 @@ UNTERWEGS_APPS_LIBS_JS_FILES += \
 	node_modules/angular-ui-date/dist/date.js \
 	node_modules/bootstrap/dist/js/bootstrap.min.js \
 	node_modules/ui-bootstrap-custom/ui-bootstrap-custom-tpls-2.5.0.min.js \
-	node_modules/d3/d3.min.js \
+	node_modules/d3/build/d3.min.js \
 	node_modules/file-saver/FileSaver.min.js
 
 UNTERWEGS_APPS_LESS_FILES := $(shell find less -type f -name '*.less')
@@ -24,6 +24,12 @@ EXTERNS_ANGULAR_Q = .build/externs/angular-1.5-q_templated.js
 EXTERNS_ANGULAR_HTTP_PROMISE = .build/externs/angular-1.5-http-promise_templated.js
 EXTERNS_JQUERY = .build/externs/jquery-1.9.js
 EXTERNS_FILES = $(EXTERNS_ANGULAR) $(EXTERNS_ANGULAR_Q) $(EXTERNS_ANGULAR_HTTP_PROMISE) $(EXTERNS_JQUERY)
+
+STAT_COMPRESSED = stat -c '  compressed: %s bytes'
+STAT_UNCOMPRESSED = stat -c 'uncompressed: %s bytes'
+STAT_LAST_MODIFIED = stat -c '%y'
+TOUCH_DATE = touch --date
+SED_NEW_LINE = ''
 
 .PHONY: help
 help:
@@ -59,7 +65,12 @@ serve: .build/node_modules.timestamp $(FONTAWESOME_WEBFONT)
 		.build/node_modules.timestamp
 	mkdir -p $(dir $@)
 	/usr/bin/node buildtools/build.js $< $@
-	echo '//# sourceMappingURL=$*.js.map' >> $@
+	echo '//# sourceMappingURL=unterwegs.js.map' >> $@
+	@$(STAT_UNCOMPRESSED) $@
+	@cp $@ /tmp/
+	@gzip /tmp/unterwegs.js
+	@$(STAT_COMPRESSED) /tmp/unterwegs.js.gz
+	@rm /tmp/unterwegs.js.gz
 
 .PRECIOUS: .build/app-unterwegs.json
 .build/app-unterwegs.json: buildtools/mako_build.json .build/python-venv/bin/mako-render
@@ -67,9 +78,9 @@ serve: .build/node_modules.timestamp $(FONTAWESOME_WEBFONT)
 	PYTHONIOENCODING=UTF-8 .build/python-venv/bin/mako-render \
 		--var 'src=app/**/*.js' \
 		--var src_set=contribs_unterwegs \
-		--var generate_exports=true \
 		--var ngeo_folder=node_modules/ngeo/ \
-		--var source_map=build/$*.js.map $< > $@
+		--var entry_point=app_unterwegs \
+		--var source_map=build/unterwegs.js.map $< > $@
 
 .PRECIOUS: node_modules/font-awesome/fonts/fontawesome-webfont.%
 node_modules/font-awesome/fonts/fontawesome-webfont.%: .build/node_modules.timestamp

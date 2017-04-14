@@ -1,8 +1,6 @@
 goog.provide('unterwegs.EdittrackpointController');
 goog.provide('unterwegs.edittrackpointDirective');
 
-goog.require('ngeo.FeatureOverlayMgr');
-goog.require('ol.Collection');
 goog.require('ol.format.GeoJSON');
 goog.require('ol.style.Circle');
 goog.require('ol.style.Stroke');
@@ -33,8 +31,6 @@ unterwegs.module.directive(
 
 /**
  * @param {angular.Scope} $scope Angular scope.
- * @param {ngeo.FeatureOverlayMgr} ngeoFeatureOverlayMgr Feature overlay
- *   manager.
  * @param {unterwegs.Track} unterwegsTrack service.
  * @param {unterwegs.Trackpoint} unterwegsTrackpoint service.
  * @constructor
@@ -42,7 +38,7 @@ unterwegs.module.directive(
  * @ngdoc controller
  * @ngname UnterwegsEdittrackpointController
  */
-unterwegs.EdittrackpointController = function($scope, ngeoFeatureOverlayMgr,
+unterwegs.EdittrackpointController = function($scope,
   unterwegsTrack, unterwegsTrackpoint) {
 
 
@@ -90,26 +86,22 @@ unterwegs.EdittrackpointController = function($scope, ngeoFeatureOverlayMgr,
    */
   this.active = this.active === true;
 
-  var map = null;
-  var mapFn = this['getMapFn'];
-  if (mapFn) {
-    map = mapFn();
-    goog.asserts.assertInstanceof(map, ol.Map);
-  }
-
   /**
    * @type {ol.Map}
    * @private
    */
-  this.map_ = map;
+  this.map_;
 
   /**
-   * @type {ngeo.FeatureOverlay}
+   * @type {ol.source.Vector}
    * @private
    */
-  this.trackpointOverlay_ = ngeoFeatureOverlayMgr.getFeatureOverlay();
+  this.trackpointSource_ = new ol.source.Vector({
+    features: []
+  });
 
-  var trackpointStyle = new ol.style.Style({
+
+  this.trackpointStyle_ = new ol.style.Style({
     image: new ol.style.Circle({
       stroke: new ol.style.Stroke({
         width: 1,
@@ -120,7 +112,30 @@ unterwegs.EdittrackpointController = function($scope, ngeoFeatureOverlayMgr,
     })
   });
 
-  this.trackpointOverlay_.setStyle(trackpointStyle);
+  /**
+   * @type {ol.layer.Vector}
+   * @private
+   */
+  this.trackpointLayer_ = new ol.layer.Vector({
+    name: 'trackpoints',
+    source: this.trackpointSource_,
+    style: this.trackpointStyle_,
+    updateWhileAnimating: true,
+    updateWhileInteracting: true
+  });
+
+  // wait until constructor has done its initialization
+  this.$onInit = function() {
+    var map = null;
+    var mapFn = this['getMapFn'];
+    if (mapFn) {
+      map = mapFn();
+      goog.asserts.assertInstanceof(map, ol.Map);
+    }
+    this.map_ = map;
+    map.addLayer(this.trackpointLayer_); 
+  };
+
 
   // Watch the active value to activate/deactive events listening.
   $scope.$watch(
@@ -145,16 +160,13 @@ unterwegs.EdittrackpointController.prototype.getData_ = function() {
     var geojsonFormat = new ol.format.GeoJSON();
     this.unterwegsTrack_.getTrackPoints(ogc_fid).
     then(function(geoJSON) {
-      var featureCollection = new ol.Collection();
-      this.trackpointOverlay_.setFeatures(featureCollection);
       var features = /** @type {Array.<ol.Feature>} */
           (geojsonFormat.readFeatures(geoJSON));
-      features.forEach(function(item) {
-        this.trackpointOverlay_.addFeature(item);
-      }.bind(this));
+      this.trackpointSource_.clear(true);
+      this.trackpointSource_.addFeatures(features);
     }.bind(this));
   } else {
-    this.trackpointOverlay_.clear();
+    this.trackpointSource_.clear();
   }
 };
 
@@ -163,7 +175,6 @@ unterwegs.EdittrackpointController.prototype.getData_ = function() {
  * @private
  */
 unterwegs.EdittrackpointController.prototype.updateEventsListening_ = function() {
-
   if (this.active && this.track && this.map_ !== null) {
     this.clickKey_ = ol.events.listen(
       this.map_, ol.events.EventType.CLICK, this.handleMapClick_, this);
@@ -178,14 +189,15 @@ unterwegs.EdittrackpointController.prototype.updateEventsListening_ = function()
  * @private
  */
 unterwegs.EdittrackpointController.prototype.handleMapClick_ = function(evt) {
-  // hit = this.map_.forEachFeatureAtPixel(evt.pixel, function(feature) {
   this.map_.forEachFeatureAtPixel(evt.pixel, function(feature) {
     this.modalEditTrackPointShown = true;
     this.trackpoint = feature;
     this.modalEditTrackPointShown = true;
     this.$scope_.$apply();
-  }, this, function(layer) {
-    return layer.get('name') !== 'track';
+  }.bind(this), {
+    layerFilter: function(layer) {
+      return layer.get('name') === 'trackpoints';
+    }
   });
 };
 

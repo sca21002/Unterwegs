@@ -45,7 +45,12 @@ unterwegs.PanelController = function() {
   /**
    * @export
    */
-  this.panelAction = this.panelActionFn();
+  this.panelAction;
+
+  // wait until constructor has done its initialization
+  this.$onInit = function() {
+    this.panelAction = this.panelActionFn();
+  };  
 };
 
 /**
