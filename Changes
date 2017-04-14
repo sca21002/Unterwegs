@@ -2,6 +2,8 @@ This file documents the revision history for Perl web application Unterwegs.
 
 {{$NEXT}}
 
+    - Update angular, openlayers, ngeo, d3 ...
+
 0.021     2017-01-03 19:51:28+01:00 Europe/Berlin
 
     - Add a modal for laptimes

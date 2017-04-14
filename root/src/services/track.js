@@ -35,8 +35,6 @@ unterwegs.Track = function($http, unterwegsServerURL) {
 */
 unterwegs.Track.prototype.getList = function(page) {
 
-  console.log('In getList');
-
   var url = goog.uri.utils.appendPath(
     this.baseURL_, '/track/list'
   );
@@ -85,7 +83,6 @@ unterwegs.Track.prototype.getTrackPoints = function(ogc_fid) {
  * @private
  */
 unterwegs.Track.prototype.handleGetData_ = function(resp) {
-  console.log('In handleGetData_');
   return resp.data;
 };
 

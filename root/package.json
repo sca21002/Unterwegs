@@ -1,6 +1,6 @@
 {
   "name": "unterwegs",
-  "version": "0.0.4",
+  "version": "0.0.22",
   "description": "Unterwegs is a web application for my tours",
   "author": "Albert Schröder",
   "repository": {
@@ -9,24 +9,24 @@
   },
   "license": "MIT",
   "dependencies": {
-    "angular": "1.5.9",
+    "angular": "1.6.4",
     "angular-float-thead": "0.1.2",
-    "angular-gettext": "2.3.7",
+    "angular-gettext": "2.3.9",
     "angular-ui-date": "1.1.1",
     "bootstrap": "3.3.7",
-    "d3": "4.7.3",
-    "eslint": "3.11.1",
-    "eslint-config-openlayers": "6.0.0",
+    "d3": "4.7.4",
+    "eslint": "3.19.0",
+    "eslint-config-openlayers": "7.0.0",
+    "file-saver": "1.3.3",
     "font-awesome": "4.7.0",
-    "jquery": "2.2.4",
+    "jquery": "3.2.1",
     "material-design-icons": "3.0.1",
-    "ngeo": "2.2.0-dev.7",
-    "openlayers": "git://github.com/openlayers/openlayers#57e67e6",
-    "file-saver": "1.3.3"
+    "ngeo": "2.2.0-dev.9",
+    "openlayers": "git://github.com/openlayers/openlayers#57e67e6"
   },
   "devDependencies": {
     "closure-util": "git://github.com/camptocamp/closure-util#00c2b9b",
-    "less": "2.7.1",
+    "less": "2.7.2",
     "less-plugin-autoprefix": "1.5.1",
     "less-plugin-clean-css": "1.5.1"
   }
